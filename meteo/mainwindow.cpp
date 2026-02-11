@@ -5,37 +5,105 @@
 #include <QTextStream>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QStringList>
-#include <cmath>
-#include <vector>
+#include <QDebug>
 
-#define KDU (M_PI/3000.0)
+#include <vector>
+#include <cmath>
+#include <limits>
+
+using namespace std;
+
+constexpr double KDU = M_PI / 3000.0;
+constexpr double EPS = 1e-9;
+
+struct Coordinate {
+    double X;
+    double Z;
+    double H;
+    double S;
+
+    QString toString() const {
+        return QString("X=%1 Z=%2 H=%3 S=%4")
+            .arg(X, 0, 'f', 3)
+            .arg(Z, 0, 'f', 3)
+            .arg(H, 0, 'f', 3)
+            .arg(S, 0, 'f', 3);
+    }
+};
 
 class Zone {
 public:
-    double zoneHeight; // порог высоты
+    double height{};
+    double x;
+    double z;
+    double s;
     double vx;
     double vz;
 
-    Zone(double h, double vx_val = 0.0, double vz_val = 0.0)
-        : zoneHeight(h), vx(vx_val), vz(vz_val) {}
+    Zone(double h, const std::vector<Coordinate>& coords): height(h){
+
+        const Coordinate* closest = findClosest(h, coords);
+        if (closest) {
+            x = closest->X;
+            z = closest->Z;
+            s = closest->S;
+        }
+    }
+
+private:
+    static const Coordinate* findClosest(double h,const std::vector<Coordinate>& coords){
+        if (coords.empty())
+            return nullptr;
+
+        const Coordinate* result = &coords[0];
+        double minDiff = std::abs(coords[0].H - h);
+
+        for (const auto& c : coords) {
+            double diff = std::abs(c.H - h);
+            if (diff < minDiff) {
+                minDiff = diff;
+                result = &c;
+            }
+        }
+
+        return result;
+    }
 };
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+static void calculateV(std::vector<Zone>& zones)
 {
+    zones[0].vx = 0.0;
+    zones[0].vz = 0.0;
+
+    for (size_t i = 1; i < zones.size(); ++i)
+    {
+        double dt = zones[i].s - zones[i - 1].s;
+
+        if (abs(dt) < EPS) {
+            zones[i].vx = 0.0;
+            zones[i].vz = 0.0;
+            continue;
+        }
+
+        zones[i].vx = (zones[i].x - zones[i - 1].x) / dt;
+        zones[i].vz = (zones[i].z - zones[i - 1].z) / dt;
+    }
+}
+
+MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWindow){
     ui->setupUi(this);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
 }
 
-void MainWindow::on_pushButtonLoad_clicked()
-{
+void MainWindow::on_pushButtonLoad_clicked(){
     QString fileName = QFileDialog::getOpenFileName(
-        this, "Открыть CSV файл", "", "CSV files (*.csv)");
+        this,
+        "Открыть CSV файл",
+        "",
+        "CSV files (*.csv)");
 
     if (fileName.isEmpty())
         return;
@@ -49,64 +117,73 @@ void MainWindow::on_pushButtonLoad_clicked()
 
     ui->listWidgetX->clear();
 
-    QTextStream in(&file); //поток для чтения текста из файла
+    QTextStream in(&file);
 
-    //const double PI = 3.14159265358979323846;
+    std::vector<Coordinate> coordinates;
+    coordinates.reserve(10000); // можно изменить при необходимости
 
-    // Создание зон
-    std::vector<Zone> zones;
-
-    // До 500 м шаг 100 м
-    for (double h = 0.0; h <= 500.0-1; h += 100.0)
-        zones.emplace_back(h);
-
-    // 500–6000 м шаг 200 м
-    for (double h = 600.0; h <= 6000.0-1; h += 200.0)
-        zones.emplace_back(h);
-
-    // 6000–14000 м шаг 400 м
-    for (double h = 6000.0; h <= 14000.0-1; h += 400.0)
-        zones.emplace_back(h);
-
-    // 14000+ м шаг 800 м
-    for (double h = 14000.0; h <= 20000.0-1; h += 800.0)
-        zones.emplace_back(h);
-
-    // читаем логи
-    while (!in.atEnd()) {
-        QString line = in.readLine();
-
-        if (line.trimmed().isEmpty())
+    // чтение csv
+    while (!in.atEnd())
+    {
+        const QString line = in.readLine().trimmed();
+        if (line.isEmpty())
             continue;
 
-        QStringList values = line.split(',');
-
+        const QStringList values = line.split(',');
         if (values.size() < 4)
             continue;
 
-        // Преобразуем в double
-        double dglob = values[0].trimmed().toDouble();
-        double aglob = values[1].trimmed().toDouble();
-        double eglob = values[2].trimmed().toDouble();
-        // double tglob = values[3];
+        const double dglob = values[0].toDouble();
+        const double aglob = values[1].toDouble();
+        const double eglob = values[2].toDouble();
+        const double tglob = values[3].toDouble();
 
-        double X = dglob * cos(eglob * KDU) * cos(aglob * KDU);
-        double Z = dglob * cos(eglob * KDU) * sin(aglob * KDU);
-        double H = dglob * sin(eglob * KDU) + 0.6868 * (1e-7) * pow(dglob * cos(eglob * KDU), 2);
+        const double cosE = cos(eglob * KDU);
+        const double sinE = sin(eglob * KDU);
+        const double cosA = cos(aglob * KDU);
+        const double sinA = sin(aglob * KDU);
 
-        // строка для отображения
-        QString displayText = QString("X = %1, Z = %2, H = %3")
-                                  .arg(X, 0, 'f', 3)
-                                  .arg(Z, 0, 'f', 3)
-                                  .arg(H, 0, 'f', 3);
+        const double X = dglob * cosE * cosA;
+        const double Z = dglob * cosE * sinA;
+        const double H = dglob * sinE + 0.6868e-7 * pow(dglob * cosE, 2);
+        const double S = tglob;
 
-        ui->listWidgetX->addItem(displayText);
+        Coordinate coord{X, Z, H, S};
+        coordinates.emplace_back(coord);
+
+        // выводим в интерфейс координаты
+        ui->listWidgetX->addItem(coord.toString());
     }
 
     file.close();
 
-    // Проверка зон
-    for (const auto& zone : zones) {
-        qDebug("Zone Height: %.2f, vx=%.2f, vz=%.2f", zone.zoneHeight, zone.vx, zone.vz);
+    // создание зон
+    vector<Zone> zones;
+    zones.reserve(200); // не знаю сколько точно места надо
+
+    auto addZones = [&](double from, double to, double step)
+    {
+        for (double h = from; h < to; h += step)
+            zones.emplace_back(h, coordinates);
+    };
+
+    addZones(0.0,     500.0,   100.0);
+    addZones(600.0,   6000.0,  200.0);
+    addZones(6000.0,  14000.0, 400.0);
+    addZones(14000.0, 20000.0, 500.0);
+
+    // составляющие скорости
+    calculateV(zones);
+
+    //проверка зон
+    for (const auto& zone : zones){
+        qDebug("Zone H=%.2f  x=%.2f  z=%.2f  s=%.2f  vx=%.2f  vz=%.2f",
+               zone.height,
+               zone.x,
+               zone.z,
+               zone.s,
+               zone.vx,
+               zone.vz);
     }
 }
+
