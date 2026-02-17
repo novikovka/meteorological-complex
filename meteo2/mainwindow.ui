@@ -14,27 +14,27 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="QListWidget" name="listWidgetX">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>80</y>
+      <width>461</width>
+      <height>531</height>
+     </rect>
+    </property>
+   </widget>
    <widget class="QPushButton" name="pushButtonLoad">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>30</y>
-      <width>131</width>
+      <x>30</x>
+      <y>20</y>
+      <width>151</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>загрузить логи</string>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="listWidgetX">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>30</y>
-      <width>341</width>
-      <height>461</height>
-     </rect>
+     <string>Загрузить логи</string>
     </property>
    </widget>
   </widget>

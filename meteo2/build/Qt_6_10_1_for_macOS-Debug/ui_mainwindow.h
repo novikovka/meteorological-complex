@@ -24,8 +24,8 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QPushButton *pushButtonLoad;
     QListWidget *listWidgetX;
+    QPushButton *pushButtonLoad;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -36,12 +36,12 @@ public:
         MainWindow->resize(800, 600);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
-        pushButtonLoad = new QPushButton(centralwidget);
-        pushButtonLoad->setObjectName("pushButtonLoad");
-        pushButtonLoad->setGeometry(QRect(40, 30, 131, 41));
         listWidgetX = new QListWidget(centralwidget);
         listWidgetX->setObjectName("listWidgetX");
-        listWidgetX->setGeometry(QRect(200, 30, 341, 461));
+        listWidgetX->setGeometry(QRect(30, 80, 461, 531));
+        pushButtonLoad = new QPushButton(centralwidget);
+        pushButtonLoad->setObjectName("pushButtonLoad");
+        pushButtonLoad->setGeometry(QRect(30, 20, 151, 41));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -59,7 +59,7 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
-        pushButtonLoad->setText(QCoreApplication::translate("MainWindow", "\320\267\320\260\320\263\321\200\321\203\320\267\320\270\321\202\321\214 \320\273\320\276\320\263\320\270", nullptr));
+        pushButtonLoad->setText(QCoreApplication::translate("MainWindow", "\320\227\320\260\320\263\321\200\321\203\320\267\320\270\321\202\321\214 \320\273\320\276\320\263\320\270", nullptr));
     } // retranslateUi
 
 };
