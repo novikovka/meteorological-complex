@@ -38,10 +38,12 @@ void MainWindow::on_pushButtonLoad_clicked()
     std::vector<Coordinate> coordinates;
     std::vector<Zone> zones;
     std::vector<Mtd> mtd;
+    std::vector<Mts> mts;
 
     coordinates.reserve(10000);
     zones.reserve(300);
     mtd.reserve(30);
+    mts.reserve(30);
 
     // приземка
     Zone firstZone(0.0);
@@ -82,27 +84,54 @@ void MainWindow::on_pushButtonLoad_clicked()
     for (double h : heights)
         mtd.emplace_back(h);
 
+    // добавляем уровни МТС (метеосредний)
+    std::vector<double> h_mts = {
+        200, 400, 800, 1200, 1600,
+        2000, 2400, 3000, 4000, 5000,
+        6000, 8000, 10000, 12000, 14000,
+        18000, 22000, 26000, 30000
+    };
+
+
+    for (double h : h_mts)
+        mts.emplace_back(h);
+
     analyzer.calculateVk(zones);
     analyzer.calculateVi(zones, mtd);
     analyzer.calculateV(mtd);
+    //void calculateDHmtd(std::vector<Mtd>& mtd);
+    analyzer.calculateDHmtd(mtd);
+    analyzer.calculateDHmts(mts);
 
+    analyzer.calculateVm(zones, mts);
 
+    analyzer.calculateWm(mts);
 
 
     qDebug() << "------зоны------";
     for (const auto& z : zones)
     {
-        qDebug("H=%.2f  x=%.2f  z=%.2f  s=%.2f  vx=%.2f  vz=%.2f  y=%.2f",
-                z.height, z.x, z.z, z.s, z.vx, z.vz, z.y);
+        qDebug("H=%.2f  x=%.2f  z=%.2f  s=%.2f  vx=%.2f  vz=%.2f  y=%.2f dh=%.2f",
+                z.height, z.x, z.z, z.s, z.vx, z.vz, z.y, z.dh);
     }
 
     qDebug() << "---метеодействительный---";
 
     for (const auto& m : mtd)
     {
-        qDebug("H=%.2f vx=%.2f vz=%.2f v=%.2f av=%.2f", m.h, m.vx, m.vz, m.v, m.av);
+        qDebug("H=%.2f vx=%.2f vz=%.2f v=%.2f av=%.2f dh=%.2f", m.h, m.vx, m.vz, m.v, m.av, m.dh);
+    }
+
+    qDebug() << "---метеосредний---";
+
+    for (const auto& m : mts)
+    {
+        qDebug("H=%.2f vx=%.2f vz=%.2f wx=%.2f wz=%.2f w=%.2f aw=%.2f dh=%.2f", m.h, m.vx, m.vz, m.wx, m.wz, m.w, m.aw, m.dh);
     }
 
     qDebug() << "---метеодействительный с округлением---";
     analyzer.createBullutin(mtd);
+
+    qDebug() << "---метеосредний с округлением---";
+    analyzer.createBullutinMts(mts);
 }

@@ -15,8 +15,16 @@ public:
 
     void calculateV(std::vector<Mtd>& mtd);
 
+    void calculateVm(const std::vector<Zone>& zones,std::vector<Mts>& mts);
+
+    void calculateWm(std::vector<Mts>& mts);
+
+    void calculateDHmtd(std::vector<Mtd>& mtd);
+    void calculateDHmts(std::vector<Mts>& mts);
+
     double napr(double x, double z);
     void createBullutin(std::vector<Mtd>& mtd);
+    void createBullutinMts(std::vector<Mts>& mts);
     QString WindCode(int windDirection, int windSpeed);
 
 private:

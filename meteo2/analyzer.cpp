@@ -3,6 +3,8 @@
 #include <QtMath>
 #include <QDebug>
 
+
+
 const Coordinate* Analyzer::findClosest(double h,const std::vector<Coordinate>& coords){
     if (coords.empty())
         return nullptr;
@@ -49,6 +51,23 @@ void Analyzer::createZones(std::vector<Zone>& zones,const std::vector<Coordinate
     addZones(14000.0, 20000.0, 500.0);
 }
 
+void Analyzer::calculateDHmtd(std::vector<Mtd>& mtd){
+    for (size_t i = 1; i < mtd.size(); ++i)
+    {
+
+        //zones[i].dh = zones[i].h - zones[i - 1].;
+        mtd[i].dh = mtd[i].h - mtd[i-1].h;
+
+    }
+}
+
+void Analyzer::calculateDHmts(std::vector<Mts>& mts){
+    for (size_t i = 0; i < mts.size(); ++i)
+    {
+        mts[i].dh = mts[i].h - mts[i-1].h;
+    }
+}
+
 void Analyzer::calculateVk(std::vector<Zone>& zones){
 
     if (zones.empty())
@@ -68,10 +87,67 @@ void Analyzer::calculateVk(std::vector<Zone>& zones){
 
         zones[i].vx = (zones[i].x - zones[i - 1].x) / (dt * 0.1);
         zones[i].vz = (zones[i].z - zones[i - 1].z) / (dt * 0.1);
-        zones[i].dh = (zones[i].height - zones[i - 1].height) / 2.0;
+        zones[i].dh = zones[i].height - zones[i - 1].height;
         zones[i].y  = (zones[i].height + zones[i - 1].height) / 2.0;
     }
 }
+
+void Analyzer::calculateVm(const std::vector<Zone>& zones,std::vector<Mts>& mts){
+    for (size_t m = 0; m < mts.size(); ++m){
+        double sumX{};
+        double sumZ{};
+
+        for (size_t k = 1; k < zones.size(); ++k){
+            if((zones[k].height <= mts[m].h) && (zones[k].height > mts[m-1].h)){
+                sumX += (zones[k].vx * zones[k].dh);
+                sumZ += (zones[k].vz * zones[k].dh);
+            }
+        }
+        mts[m].vx = (1/mts[m].dh) * sumX;
+        mts[m].vz = (1/mts[m].dh) * sumZ;
+    }
+}
+
+void Analyzer::calculateWm(std::vector<Mts>& mts)
+{
+    for (size_t m = 0; m < mts.size(); ++m)
+    {
+        double sumX{};
+        double sumZ{};
+
+        for (size_t l = 0; l <= m; ++l)
+        {
+            sumX += mts[l].vx * mts[l].dh;
+            sumZ += mts[l].vz * mts[l].dh;
+        }
+
+        if (mts[m].h > EPS)
+        {
+            double wx = sumX / mts[m].h;
+            double wz = sumZ / mts[m].h;
+
+            mts[m].wx = wx;
+            mts[m].wz = wz;
+
+            mts[m].w  = std::sqrt(std::pow(wx, 2) + std::pow(wz, 2));
+            mts[m].aw = qRound(napr(mts[m].wx, mts[m].wz) * KDR);
+
+        }
+    }
+}
+
+
+/*
+void Analyzer::calculateWm(const std::vector<Zone>& zones,std::vector<Mts>& mts){
+
+    double sumX{};
+    //double sumZ{};
+    for (size_t m = 1; m < mts.size(); ++m){
+
+    }
+}
+*/
+
 
 void Analyzer::calculateVi(const std::vector<Zone>& zones,std::vector<Mtd>& mtd){
 
@@ -149,6 +225,13 @@ void Analyzer::createBullutin(std::vector<Mtd>& mtd)
 {
     for(auto x : mtd){
         qDebug() << WindCode(x.av, qRound(x.v));
+    }
+}
+
+void Analyzer::createBullutinMts(std::vector<Mts>& mts)
+{
+    for(auto x : mts){
+        qDebug() << WindCode(x.aw, qRound(x.w));
     }
 }
 
