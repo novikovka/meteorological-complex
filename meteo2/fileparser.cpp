@@ -90,3 +90,95 @@ void FileParser::parseDataLine(const QStringList& values,std::vector<Coordinate>
 
     coordinates.push_back(coord);
 }
+
+/*
+bool FileParser::parseTemperatureCSV(const QString& fileName,std::vector<TemperatureRecord>& records)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QTextStream in(&file);
+
+    while (!in.atEnd())
+    {
+        QString line = in.readLine().trimmed();
+
+        if (line.isEmpty())
+            continue;
+
+        QStringList values = line.split(',');
+
+        if (values.size() < 3)
+            continue;
+
+        TemperatureRecord record;
+        record.QO  = values[0].toDouble();
+        record.QT  = values[1].toDouble();
+        record.dtp = values[2].toDouble();
+
+        //double Yt = QO / QT;
+        //double Rt = (globalParam.R1 / Yt) - globalParam.R2;
+        //double
+
+        records.push_back(record);
+    }
+
+    file.close();
+    return true;
+}
+*/
+
+bool FileParser::parseTemperatureCSV(const QString& fileName,
+                                     std::vector<TemperatureRecord>& records)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QTextStream in(&file);
+
+    int currentIndex = 1;   // начинаем с 1
+    bool previousWasEmpty = false;
+
+    while (!in.atEnd())
+    {
+        QString line = in.readLine().trimmed();
+
+        // если строка пустая
+        if (line.isEmpty())
+        {
+            // увеличиваем индекс только один раз на блок
+            if (!previousWasEmpty)
+            {
+                currentIndex++;
+                previousWasEmpty = true;
+            }
+            continue;
+        }
+
+        previousWasEmpty = false;
+
+        QStringList values = line.split(',');
+
+        if (values.size() < 3)
+            continue;
+
+        TemperatureRecord record;
+
+        record.index = currentIndex;   // ← вот главное
+        record.QO    = values[0].toDouble();
+        record.QT    = values[1].toDouble();
+        record.dtp   = values[2].toDouble();
+
+        records.push_back(record);
+    }
+
+    file.close();
+    return true;
+}
+
+
+

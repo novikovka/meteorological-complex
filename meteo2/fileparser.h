@@ -10,6 +10,9 @@ class FileParser
 public:
     bool parseCSV(const QString& fileName,std::vector<Coordinate>& coordinates,Zone& firstZone,Mtd& firstMtd);
 
+    bool parseTemperatureCSV(const QString& fileName,std::vector<TemperatureRecord>& records);
+
+
 private:
     void parseFirstLine(const QStringList& values,Zone& firstZone,Mtd& firstMtd);
 

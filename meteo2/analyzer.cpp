@@ -61,12 +61,22 @@ void Analyzer::calculateDHmtd(std::vector<Mtd>& mtd){
     }
 }
 
+/*
 void Analyzer::calculateDHmts(std::vector<Mts>& mts){
     for (size_t i = 0; i < mts.size(); ++i)
     {
         mts[i].dh = mts[i].h - mts[i-1].h;
     }
 }
+*/
+
+void Analyzer::calculateDHmts(std::vector<Mts>& mts){
+    for (size_t i = 1; i < mts.size(); ++i)
+    {
+        mts[i].dh = mts[i].h - mts[i-1].h;
+    }
+}
+
 
 void Analyzer::calculateVk(std::vector<Zone>& zones){
 
@@ -235,18 +245,137 @@ void Analyzer::createBullutinMts(std::vector<Mts>& mts)
     }
 }
 
-
 /*
-void Analyzer::printRes(std::vector<Mtd>& mtd)
-{
-    for(auto x : mtd){
-        qDebug() << x.h << " " << x.vi << " " << x.avi;
+void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants globalParam){
+    for(auto r : records){
+        double Yt = r.QO / r.QT;
+        double Rt = (globalParam.R1 / Yt) - globalParam.R2;
+        double denominator = log(pow(10,3)) + log(Rt / globalParam.A);
+        double T = (globalParam.B / denominator) - globalParam.C - 273.15;
+        r.Yt = Yt;
+        r.Rt = Rt;
+        r.T = T;
     }
-
-    qDebug();
-    for(auto x : mt11){
-        qDebug() << x.h << " " << x.wm << " " << x.awm;
-    }
-
 }
 */
+
+void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants globalParam){
+    for(auto& r : records){
+        double Yt = r.QO / r.QT;
+        double Rt = (globalParam.R1 / Yt) - globalParam.R2;
+        double denominator = log(pow(10,3)) + log(Rt / globalParam.A);
+        double T = (globalParam.B / denominator) - globalParam.C - 273.15;
+        r.Yt = Yt;
+        r.Rt = Rt;
+        r.T = T;
+    }
+}
+
+/*
+void Analyzer::createTzones(std::vector<Tzone>& Tzones){
+    auto addZones = [&](double from, double to, double step)
+    {
+        for (double h = from; h < to; h += step)
+        {
+            Tzone zone(h);
+            Tzones.push_back(zone);
+        }
+    };
+
+    addZones(0.0,     500.0,   100.0);
+    addZones(100.0,     500.0,   100.0);
+    addZones(600.0,   6000.0,  200.0);
+    addZones(6000.0,  14000.0, 400.0);
+    addZones(14000.0, 20000.0, 500.0);
+}
+*/
+
+void Analyzer::createTzones(std::vector<Tzone>& Tzones)
+{
+    Tzones.clear();
+
+    auto addZones = [&](double from, double to, double step)
+    {
+        for (double h = from; h < to; h += step)
+        {
+            Tzones.emplace_back(h);
+        }
+    };
+
+    // первая зона
+    Tzones.emplace_back(0.0);
+
+    // до 500 м — шаг 100
+    addZones(100.0, 500.0, 100.0);
+
+    // 500–6000 м — шаг 200 (начинаем с 600)
+    addZones(600.0, 6000.0, 200.0);
+
+    // 6000–14000 м — шаг 400
+    addZones(6000.0, 14000.0, 400.0);
+
+    // 14000–20000 м — шаг 500
+    addZones(14000.0, 50001.0, 500.0);
+}
+
+/*
+void Analyzer::calculateTn(std::vector<Tzone>& Tzones, std::vector<TemperatureRecord>& records){
+
+    for(auto& zone : Tzones){
+
+        int k = 0;
+        double sum = 0.0;
+        int ind = 1;
+
+        for(auto& r : records){
+
+            if(ind == r.index){
+
+                k += 1;
+                sum += r.T;
+
+            }else{
+
+                zone.Tn = sum/k;
+                sum = 0;
+                k = 0;
+                ind += 1;
+            }
+
+        }
+    }
+}
+
+*/
+
+// Метод для вычисления средних температур по индексам
+void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::vector<Tzone>& Tzones)
+{
+    // Словарь: key = индекс, value = пара (сумма T, количество записей)
+    std::unordered_map<int, std::pair<double, int>> sumCount;
+
+    // 1. Просуммировать T по index
+    for (const auto& rec : records) {
+        sumCount[rec.index].first += rec.T;  // сумма T
+        sumCount[rec.index].second += 1;    // количество записей
+    }
+
+    // 2. Записать средние значения в Tzones по порядку
+    for (size_t i = 0; i < Tzones.size(); ++i) {
+        int idx = static_cast<int>(i + 1); // если индексы начинаются с 1
+        if (sumCount.find(idx) != sumCount.end() && sumCount[idx].second != 0) {
+            Tzones[i].Tn = sumCount[idx].first / sumCount[idx].second;
+        } else {
+            Tzones[i].Tn = 0.0; // или другое значение по умолчанию
+        }
+    }
+}
+
+void Analyzer::calculateMediumHeight(std::vector<Tzone>& Tzones)
+{
+    for (size_t i = 1; i < Tzones.size(); ++i)
+    {
+        Tzones[i].Hi = (Tzones[i - 1].height + Tzones[i].height) / 2.0;
+    }
+}
+

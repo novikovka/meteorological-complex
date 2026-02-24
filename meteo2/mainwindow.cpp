@@ -135,3 +135,96 @@ void MainWindow::on_pushButtonLoad_clicked()
     qDebug() << "---метеосредний с округлением---";
     analyzer.createBullutinMts(mts);
 }
+
+void MainWindow::on_pushButtonLoadTempLog_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Открыть log-файл температуры",
+        "",
+        "CSV files (*.csv)");
+
+    if (fileName.isEmpty())
+        return;
+
+    tempLogFilePath = fileName;
+
+    QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
+}
+
+void MainWindow::on_pushButtonCalculateTemp_clicked()
+{
+    Analyzer analyzer;
+
+    UserConstants globalParam;
+
+    globalParam.A = ui->doubleSpinBoxA->value();
+    globalParam.B = ui->doubleSpinBoxB->value();
+    globalParam.C = ui->doubleSpinBoxC->value();
+    globalParam.R1 = ui->doubleSpinBoxR1->value();
+    globalParam.R2 = ui->doubleSpinBoxR2->value();
+
+    qDebug("A=%.2f B=%.2f C=%.2f R1=%.2f R2=%.2f", globalParam.A, globalParam.B, globalParam.C, globalParam.R1, globalParam.R2);
+
+    std::vector<Tzone> Tzones;
+    Tzones.reserve(300);
+
+    analyzer.createTzones(Tzones);
+
+
+    if (tempLogFilePath.isEmpty())
+    {
+        QMessageBox::warning(this,
+                             "Ошибка",
+                             "Сначала загрузите log-файл.");
+        return;
+    }
+
+    // Создаём объект парсера
+    FileParser parser;
+
+    // Вектор для хранения записей температуры
+    std::vector<TemperatureRecord> records;
+
+    // Пытаемся распарсить CSV
+    if (!parser.parseTemperatureCSV(tempLogFilePath, records))
+    {
+        QMessageBox::critical(this,
+                              "Ошибка",
+                              "Не удалось открыть или прочитать CSV файл.");
+        return;
+    }
+
+    // Очищаем текстовое поле
+    ui->textEditTempResult->clear();
+
+    // Выводим все записи
+    for (const auto& rec : records)
+    {
+        ui->textEditTempResult->append(
+            QString("QO: %1, QT: %2, dtp: %3")
+                .arg(rec.QO)
+                .arg(rec.QT)
+                .arg(rec.dtp)
+            );
+    }
+
+    analyzer.calculateT(records, globalParam);
+    analyzer.calculateTn(records, Tzones);
+    analyzer.calculateMediumHeight(Tzones);
+
+    qDebug() << "---температура для каждой точки---";
+
+    for (const auto& r : records)
+    {
+        qDebug("QO=%.2f QT=%.2f dtp=%.2f Yt=%.2f Rt=%.2f T=%.2f index=%d", r.QO, r.QT, r.dtp, r.Yt, r.Rt, r.T, r.index);
+    }
+
+    for (const auto& T : Tzones)
+    {
+        qDebug("height=%.2f Tn=%.2f Hi=%.2f", T.height, T.Tn, T.Hi);
+    }
+
+}
+
+
