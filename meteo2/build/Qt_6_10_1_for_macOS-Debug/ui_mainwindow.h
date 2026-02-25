@@ -56,7 +56,7 @@ public:
         centralwidget->setObjectName("centralwidget");
         tabWidget = new QTabWidget(centralwidget);
         tabWidget->setObjectName("tabWidget");
-        tabWidget->setGeometry(QRect(10, 30, 791, 511));
+        tabWidget->setGeometry(QRect(0, 0, 791, 611));
         tab = new QWidget();
         tab->setObjectName("tab");
         pushButtonLoad = new QPushButton(tab);
@@ -93,10 +93,10 @@ public:
         doubleSpinBoxR2->setMaximum(100000.000000000000000);
         pushButtonCalculateTemp = new QPushButton(tab_2);
         pushButtonCalculateTemp->setObjectName("pushButtonCalculateTemp");
-        pushButtonCalculateTemp->setGeometry(QRect(250, 50, 171, 51));
+        pushButtonCalculateTemp->setGeometry(QRect(260, 50, 171, 51));
         textEditTempResult = new QTextEdit(tab_2);
         textEditTempResult->setObjectName("textEditTempResult");
-        textEditTempResult->setGeometry(QRect(60, 210, 431, 271));
+        textEditTempResult->setGeometry(QRect(60, 200, 431, 311));
         label = new QLabel(tab_2);
         label->setObjectName("label");
         label->setGeometry(QRect(60, 20, 561, 16));

@@ -4,12 +4,15 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <unordered_map>
 
 #include "fileparser.h"
 #include "analyzer.h"
 #include "types.h"
 
 #include <vector>
+#include <array>
+#include <map>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -152,6 +155,27 @@ void MainWindow::on_pushButtonLoadTempLog_clicked()
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
 
+/*
+void MainWindow::on_pushButtonLoadSecondCsv_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Открыть второй CSV файл",
+        "",
+        "CSV files (*.csv)");
+
+    if (fileName.isEmpty())
+        return;
+
+    secondCsvFilePath = fileName;
+
+    QMessageBox::information(this,
+                             "Файл загружен",
+                             "Второй CSV файл успешно выбран.");
+}
+*/
+
+
 void MainWindow::on_pushButtonCalculateTemp_clicked()
 {
     Analyzer analyzer;
@@ -163,6 +187,10 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     globalParam.C = ui->doubleSpinBoxC->value();
     globalParam.R1 = ui->doubleSpinBoxR1->value();
     globalParam.R2 = ui->doubleSpinBoxR2->value();
+
+    globalParam.T0 = 10.0;
+    globalParam.U0 = 51.0;
+    globalParam.P0 = 993.331;
 
     qDebug("A=%.2f B=%.2f C=%.2f R1=%.2f R2=%.2f", globalParam.A, globalParam.B, globalParam.C, globalParam.R1, globalParam.R2);
 
@@ -209,20 +237,141 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
             );
     }
 
+    /*
+    std::unordered_map<double, double> Tvir;
+
+    Tvir[0] = 0.3;
+    Tvir[1] = 0.3;
+    Tvir[2] = 0.4;
+    Tvir[3] = 0.4;
+    Tvir[4] = 0.4;
+    Tvir[5] = 0.5;
+    Tvir[6] = 0.5;
+    Tvir[7] = 0.6;
+    Tvir[8] = 0.6;
+    Tvir[9] = 0.7;
+    Tvir[10] = 0.7;
+    Tvir[11] = 0.8;
+    Tvir[12] = 0.8;
+    Tvir[13] = 0.8;
+    Tvir[14] = 0.9;
+    Tvir[15] = 0.9;
+    Tvir[16] = 1.0;
+    Tvir[17] = 1.0;
+    Tvir[18] = 1.1;
+    Tvir[19] = 1.2;
+    Tvir[20] = 1.3;
+    Tvir[21] = 1.4;
+    Tvir[22] = 1.5;
+    Tvir[23] = 1.6;
+    Tvir[24] = 1.7;
+    Tvir[25] = 1.8;
+    Tvir[26] = 1.9;
+    Tvir[27] = 2.0;
+    Tvir[28] = 2.2;
+    Tvir[29] = 2.3;
+    Tvir[30] = 2.4;
+    Tvir[31] = 2.55;
+    Tvir[32] = 2.7;
+    Tvir[33] = 2.9;
+    Tvir[34] = 3.1;
+    Tvir[35] = 3.3;
+    Tvir[36] = 3.5;
+    Tvir[37] = 3.7;
+    Tvir[38] = 3.9;
+    Tvir[39] = 4.15;
+    Tvir[40] = 4.4;
+    Tvir[41] = 4.65;
+    Tvir[42] = 4.9;
+    Tvir[43] = 5.2;
+    Tvir[44] = 5.5;
+    Tvir[45] = 5.8;
+    Tvir[46] = 6.1;
+    Tvir[47] = 6.4;
+    Tvir[48] = 6.7;
+    Tvir[49] = 7.05;
+    Tvir[50] = 7.4;
+    */
+
+
+    const std::array<double, 51> Tvir = {
+        0.3, 0.3, 0.4, 0.4, 0.4,
+        0.5, 0.5, 0.6, 0.6, 0.7,
+        0.7, 0.8, 0.8, 0.8, 0.9,
+        0.9, 1.0, 1.0, 1.1, 1.2,
+        1.3, 1.4, 1.5, 1.6, 1.7,
+        1.8, 1.9, 2.0, 2.2, 2.3,
+        2.4, 2.55, 2.7, 2.9, 3.1,
+        3.3, 3.5, 3.7, 3.9, 4.15,
+        4.4, 4.65, 4.9, 5.2, 5.5,
+        5.8, 6.1, 6.4, 6.7, 7.05,
+        7.4
+    };
+
+    std::map<double, double> temperatureTable = {
+        {25.0,  15.75},
+        {50.0,  15.6},
+        {75.0,  15.45},
+        {150.0,  14.95},
+        {200.0,  15.3},
+        {400.0,  14.0},
+        {500.0,  12.7},
+        {700.0,  11.4},
+        {800.0,  12.1},
+        {900.0, 10.2},
+        {1100.0, 9.0},
+        {1200.0, 9.6},
+        {1600.0, 7.0},
+        {2000.0, 4.5},
+        {2400.0, 2.0},
+        {3000.0, -1.2},
+        {4000.0, -6.2},
+        {5000.0, -12.6},
+        {6000.0, -18.9},
+        {8000.0, -28.4},
+        {10000.0, -41.1},
+        {12000.0, -50.4},
+        {14000.0, -51.5},
+        {16000.0, -51.5},
+        {18000.0, -51.5},
+        {20000.0, -51.5},
+    };
+
+
+    // 1. Считаем температуру для каждого измерения
     analyzer.calculateT(records, globalParam);
+
+    // 2. Прибавляем радиационную поправку
+    analyzer.addRadio(records);
+
+    // 3. Температура для каждой зоны
     analyzer.calculateTn(records, Tzones);
+
+    // 4. Вычисляем среднюю высоту зоны
     analyzer.calculateMediumHeight(Tzones);
+
+    // 5. Вычисляем виртуальную поправку для каждой зоны
+    analyzer.calculateDTvir(Tzones, globalParam);
+
+    // 6. Прибавляем виртуальную поправку к температурам зон
+    analyzer.addVir(Tzones);
+
+    // 7. Вычисляем табличное значение температуры для средних высот зон
+    analyzer.fillTabTemperature(temperatureTable, Tzones);
+
 
     qDebug() << "---температура для каждой точки---";
 
     for (const auto& r : records)
     {
-        qDebug("QO=%.2f QT=%.2f dtp=%.2f Yt=%.2f Rt=%.2f T=%.2f index=%d", r.QO, r.QT, r.dtp, r.Yt, r.Rt, r.T, r.index);
+        qDebug("QO=%.2f QT=%.2f dtp=%.2f dtv=%.2f Yt=%.2f Rt=%.2f T=%.2f index=%d", r.QO, r.QT, r.dtp, r.dtv, r.Yt, r.Rt, r.T, r.index);
     }
+
+    qDebug() << "---разбивка по зонам---";
 
     for (const auto& T : Tzones)
     {
-        qDebug("height=%.2f Tn=%.2f Hi=%.2f", T.height, T.Tn, T.Hi);
+        qDebug("height=%.2f Tn=%.2f Hi=%.2f dTvir=%.2f Tvrn=%.2f Ttab=%.2f", T.height, T.Tn, T.Hi, T.dTvir, T.Tvrn, T.Ttab);
     }
 
 }

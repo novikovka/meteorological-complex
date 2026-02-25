@@ -276,6 +276,7 @@ DIST          = /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_pre.p
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/qt_config.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang/qmake.conf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_post.prf \
+		../../.qmake.stash \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/exclusive_builds.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/mac/sdk.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/toolchain.prf \
@@ -320,7 +321,7 @@ TARGET        = meteo2.app/Contents/MacOS/meteo2
 EXPORT_QMAKE_MAC_SDK = macosx
 EXPORT_QMAKE_MAC_SDK_VERSION = 26.0
 EXPORT_QMAKE_XCODE_DEVELOPER_PATH = /Library/Developer/CommandLineTools
-EXPORT__QMAKE_STASH_ = 
+EXPORT__QMAKE_STASH_ = /Users/alinanovikova/Documents/Qt-Projects/meteo2/build/Qt_6_10_1_for_macOS-Debug/.qmake.stash
 EXPORT_VALID_ARCHS = x86_64 arm64
 EXPORT_DEFAULT_ARCHS = arm64
 EXPORT_ARCHS = $(filter $(EXPORT_VALID_ARCHS), $(if $(ARCHS), $(ARCHS), $(if $(EXPORT_DEFAULT_ARCHS), $(EXPORT_DEFAULT_ARCHS), $(EXPORT_VALID_ARCHS))))
@@ -551,6 +552,7 @@ Makefile: ../../meteo2.pro /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-cla
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/qt_config.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang/qmake.conf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/exclusive_builds.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/mac/sdk.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/toolchain.prf \
@@ -800,6 +802,7 @@ Makefile: ../../meteo2.pro /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-cla
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/qt_config.prf:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang/qmake.conf:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/exclusive_builds.prf:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/mac/sdk.prf:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/toolchain.prf:
@@ -869,6 +872,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r meteo2.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -893,6 +897,8 @@ compiler_moc_header_clean:
 moc_mainwindow.cpp: ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../mainwindow.h -o moc_mainwindow.cpp
 
@@ -922,7 +928,11 @@ compiler_clean: compiler_moc_header_clean compiler_uic_clean
 analyzer.o: ../../analyzer.cpp ../../analyzer.h \
 		../../types.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
-		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QtMath \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qmath.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDebug \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdebug.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o analyzer.o ../../analyzer.cpp
 
 fileparser.o: ../../fileparser.cpp ../../fileparser.h \
@@ -942,6 +952,8 @@ fileparser.o: ../../fileparser.cpp ../../fileparser.h \
 main.o: ../../main.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../../main.cpp
@@ -949,6 +961,8 @@ main.o: ../../main.cpp ../../mainwindow.h \
 mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		ui_mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QFileDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qfiledialog.h \
@@ -957,8 +971,6 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDebug \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdebug.h \
 		../../fileparser.h \
-		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
-		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		../../types.h \
 		../../analyzer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../mainwindow.cpp

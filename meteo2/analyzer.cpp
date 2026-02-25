@@ -3,7 +3,9 @@
 #include <QtMath>
 #include <QDebug>
 
-
+#include <map>
+#include <vector>
+#include <algorithm>
 
 const Coordinate* Analyzer::findClosest(double h,const std::vector<Coordinate>& coords){
     if (coords.empty())
@@ -348,6 +350,71 @@ void Analyzer::calculateTn(std::vector<Tzone>& Tzones, std::vector<TemperatureRe
 
 */
 
+
+void Analyzer::calculateMediumHeight(std::vector<Tzone>& Tzones)
+{
+    for (size_t i = 1; i < Tzones.size(); ++i)
+    {
+        Tzones[i].Hi = (Tzones[i - 1].height + Tzones[i].height) / 2.0;
+    }
+}
+
+/*
+void Analyzer::calculateDTvir(std::unordered_map<double, double> Tvir, std::vector<TemperatureRecord>& records){
+
+    for (auto& rec : records){
+        if (rec.T < -11.0){
+            rec.dtv = 0.0;
+        }else if (-11.0 <= rec.T < -5.0){
+            rec.dtv = 0.1;
+        }else if (-5.0 <= rec.T < 0){
+            rec.dtv = 0.1;
+        }else{
+            rec.dtv = Tvir[rec.T];
+        }
+    }
+}
+*/
+
+/*
+void Analyzer::calculateDTvir(const std::array<double, 51>& Tvir,std::vector<TemperatureRecord>& records){
+
+    for (auto& rec : records)
+    {
+        if (rec.T < -11.0)
+        {
+            rec.dtv = 0.0;
+        }
+        else if (rec.T < 0.0)
+        {
+            rec.dtv = 0.1;
+        }
+        else
+        {
+            int index = static_cast<int>(rec.T);
+
+            if (index >= 0 && index < Tvir.size())
+                rec.dtv = Tvir[index];
+            else
+                rec.dtv = 0.0;  // защита от выхода за границы
+        }
+    }
+}
+*/
+
+void Analyzer::addRadio(std::vector<TemperatureRecord>& records){
+    for (auto& rec : records){
+        rec.T1 = rec.T + rec.dtp;
+    }
+}
+
+void Analyzer::addVir(std::vector<Tzone>& Tzones){
+    for (auto& zone : Tzones){
+        //rec.T1 = rec.T + rec.dtp;
+        zone.Tvrn = zone.Tn + zone.dTvir;
+    }
+}
+
 // Метод для вычисления средних температур по индексам
 void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::vector<Tzone>& Tzones)
 {
@@ -356,7 +423,7 @@ void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::ve
 
     // 1. Просуммировать T по index
     for (const auto& rec : records) {
-        sumCount[rec.index].first += rec.T;  // сумма T
+        sumCount[rec.index].first += rec.T1;  // сумма T
         sumCount[rec.index].second += 1;    // количество записей
     }
 
@@ -371,11 +438,92 @@ void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::ve
     }
 }
 
-void Analyzer::calculateMediumHeight(std::vector<Tzone>& Tzones)
-{
+void Analyzer::calculateDTvir(std::vector<Tzone>& Tzones, UserConstants globalParam){
+
+
     for (size_t i = 1; i < Tzones.size(); ++i)
     {
-        Tzones[i].Hi = (Tzones[i - 1].height + Tzones[i].height) / 2.0;
+        double Hkm = Tzones[i].Hi / 1000.0;
+
+        double x1 = (2.3 * (Tzones[i].Tn + 273.15) * globalParam.U0) / (100 * globalParam.P0);
+
+        double x2 = std::exp(((310 * globalParam.T0) - std::pow(globalParam.T0, 2)) / 4300);
+
+        //double x3 = std::exp(-2.3 * (0.0947 * Tzones[i].Hi + 0.0138 * std::pow(Tzones[i].Hi,2)));
+        double x3 = std::exp(-2.3 * (0.0947 * Hkm + 0.0138 * std::pow(Hkm, 2)));
+
+        Tzones[i].dTvir = x1 * x2 * x3;
     }
 }
 
+
+void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Tzone>& zones)
+{
+    if (temperatureTable.empty())
+        return;
+
+    for (auto& zone : zones)
+    {
+        double H = zone.Hi;
+
+        // Находим первый элемент >= H
+        auto upper = temperatureTable.lower_bound(H);
+
+        // --- Случай 1: H выше всех табличных высот ---
+        if (upper == temperatureTable.end())
+        {
+            zone.Ttab = std::prev(upper)->second; // берём последнее значение
+            continue;
+        }
+
+        // --- Случай 2: точное совпадение ---
+        if (upper->first == H)
+        {
+            zone.Ttab = upper->second;
+            continue;
+        }
+
+        // --- Случай 3: H ниже минимальной высоты ---
+        if (upper == temperatureTable.begin())
+        {
+            zone.Ttab = upper->second; // берём первое значение
+            continue;
+        }
+
+        // --- Случай 4: интерполяция ---
+        auto lower = std::prev(upper);
+
+        double H1 = lower->first;
+        double T1 = lower->second;
+
+        double H2 = upper->first;
+        double T2 = upper->second;
+
+        // Линейная интерполяция
+        zone.Ttab = T1 + (H - H1) * (T2 - T1) / (H2 - H1);
+    }
+}
+
+void Analyzer::calculateTpni(std::vector<TemperatureRecord>& records){ // температура на каждом измерении с учетом всех поправок
+    for (auto& rec : records){
+        rec.Tpni = rec.T + rec.dtp + rec.dtv;
+    }
+}
+
+void Analyzer::calculateTTcpm(std::vector<Tzone>& Tzones){
+
+    Tzones[0].TTcpm = Tzones[0].Tn;
+    for (size_t i = 1; i < Tzones.size(); ++i)
+    {
+        double x = (Tzones[i].TTcpm * Tzones[i-1].height) + (Tzones[i].Tn * Tzones[i].dH);
+        Tzones[i].TTcpm = x/Tzones[i].height;
+
+    }
+}
+
+void Analyzer::calculateDeltaH(std::vector<Tzone>& Tzones){
+    Tzones[0].dH = 0;
+    for (size_t i = 1; i < Tzones.size(); ++i){
+        Tzones[i].dH = Tzones[i].height - Tzones[i-1].height;
+    }
+}

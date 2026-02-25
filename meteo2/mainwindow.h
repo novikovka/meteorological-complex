@@ -26,11 +26,14 @@ private slots:
     void on_pushButtonLoadTempLog_clicked();
     void on_pushButtonCalculateTemp_clicked();
 
+
 private:
     Ui::MainWindow *ui;
 
     // путь к температурному лог-файлу
     QString tempLogFilePath;
+    // QString secondCsvFilePath;
+
 };
 
 #endif // MAINWINDOW_H
