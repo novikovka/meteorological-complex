@@ -148,19 +148,6 @@ void Analyzer::calculateWm(std::vector<Mts>& mts)
     }
 }
 
-
-/*
-void Analyzer::calculateWm(const std::vector<Zone>& zones,std::vector<Mts>& mts){
-
-    double sumX{};
-    //double sumZ{};
-    for (size_t m = 1; m < mts.size(); ++m){
-
-    }
-}
-*/
-
-
 void Analyzer::calculateVi(const std::vector<Zone>& zones,std::vector<Mtd>& mtd){
 
     for (size_t i = 1; i < mtd.size(); ++i)
@@ -247,20 +234,6 @@ void Analyzer::createBullutinMts(std::vector<Mts>& mts)
     }
 }
 
-/*
-void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants globalParam){
-    for(auto r : records){
-        double Yt = r.QO / r.QT;
-        double Rt = (globalParam.R1 / Yt) - globalParam.R2;
-        double denominator = log(pow(10,3)) + log(Rt / globalParam.A);
-        double T = (globalParam.B / denominator) - globalParam.C - 273.15;
-        r.Yt = Yt;
-        r.Rt = Rt;
-        r.T = T;
-    }
-}
-*/
-
 void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants globalParam){
     for(auto& r : records){
         double Yt = r.QO / r.QT;
@@ -272,25 +245,6 @@ void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants
         r.T = T;
     }
 }
-
-/*
-void Analyzer::createTzones(std::vector<Tzone>& Tzones){
-    auto addZones = [&](double from, double to, double step)
-    {
-        for (double h = from; h < to; h += step)
-        {
-            Tzone zone(h);
-            Tzones.push_back(zone);
-        }
-    };
-
-    addZones(0.0,     500.0,   100.0);
-    addZones(100.0,     500.0,   100.0);
-    addZones(600.0,   6000.0,  200.0);
-    addZones(6000.0,  14000.0, 400.0);
-    addZones(14000.0, 20000.0, 500.0);
-}
-*/
 
 void Analyzer::createTzones(std::vector<Tzone>& Tzones)
 {
@@ -319,37 +273,6 @@ void Analyzer::createTzones(std::vector<Tzone>& Tzones)
     // 14000–20000 м — шаг 500
     addZones(14000.0, 50001.0, 500.0);
 }
-
-/*
-void Analyzer::calculateTn(std::vector<Tzone>& Tzones, std::vector<TemperatureRecord>& records){
-
-    for(auto& zone : Tzones){
-
-        int k = 0;
-        double sum = 0.0;
-        int ind = 1;
-
-        for(auto& r : records){
-
-            if(ind == r.index){
-
-                k += 1;
-                sum += r.T;
-
-            }else{
-
-                zone.Tn = sum/k;
-                sum = 0;
-                k = 0;
-                ind += 1;
-            }
-
-        }
-    }
-}
-
-*/
-
 
 void Analyzer::calculateMediumHeight(std::vector<Tzone>& Tzones)
 {
@@ -504,20 +427,28 @@ void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTab
     }
 }
 
+void Analyzer::calculateTTi(std::vector<Tzone>& Tzones){
+    for (auto& zone : Tzones){
+        zone.TTi = zone.Tvrn - zone.Ttab;
+    }
+}
+
 void Analyzer::calculateTpni(std::vector<TemperatureRecord>& records){ // температура на каждом измерении с учетом всех поправок
     for (auto& rec : records){
         rec.Tpni = rec.T + rec.dtp + rec.dtv;
     }
 }
 
-void Analyzer::calculateTTcpm(std::vector<Tzone>& Tzones){
+void Analyzer::calculateTTcpm(std::vector<Tzone>& zones){
 
-    Tzones[0].TTcpm = Tzones[0].Tn;
-    for (size_t i = 1; i < Tzones.size(); ++i)
+    zones[0].TTcpm = zones[0].TTi;
+    for (size_t i = 1; i < zones.size(); ++i)
     {
-        double x = (Tzones[i].TTcpm * Tzones[i-1].height) + (Tzones[i].Tn * Tzones[i].dH);
-        Tzones[i].TTcpm = x/Tzones[i].height;
+        double x = (zones[i-1].TTcpm * zones[i-1].height) + (zones[i].TTi * zones[i].dH);
+        qDebug() << x;
+        qDebug() << "dH" << zones[i].dH;
 
+        zones[i].TTcpm = x / zones[i].height;
     }
 }
 
@@ -525,5 +456,26 @@ void Analyzer::calculateDeltaH(std::vector<Tzone>& Tzones){
     Tzones[0].dH = 0;
     for (size_t i = 1; i < Tzones.size(); ++i){
         Tzones[i].dH = Tzones[i].height - Tzones[i-1].height;
+    }
+}
+
+// плотность
+
+void Analyzer::calculatePi(std::vector<Tzone>& zones, UserConstants globalParam){
+
+    zones[0].Pn = globalParam.P0;
+    zones[1].Pn = globalParam.P0 * exp((-1/29.27*2)*(zones[1].height/zones[1].Tvrn));
+
+    for (size_t i = 2; i < zones.size(); ++i){
+
+        double a1 = zones[i].height - zones[i-1].height; // числитель первой дроби
+        double a2 = zones[i-1].height - zones[i-2].height; // числитель второй дроби
+
+        double x1 = a1/(zones[i].Tvrn + 273.15); // первая дробь
+        double x2 = a2/(zones[i-1].Tvrn + 273.15); // вторая дробь
+
+        double e = (-1/58.54) * (x1 + x2); //внутри экпоненты
+
+        zones[i].Pn = zones[i-1].Pn * exp(e);
     }
 }

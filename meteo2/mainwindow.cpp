@@ -14,11 +14,11 @@
 #include <array>
 #include <map>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent),
-    ui(new Ui::MainWindow)
+
+MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
 }
 
 MainWindow::~MainWindow()
@@ -337,6 +337,8 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         {20000.0, -51.5},
     };
 
+    // 0. Считаем толщину зоны
+    analyzer.calculateDeltaH(Tzones);
 
     // 1. Считаем температуру для каждого измерения
     analyzer.calculateT(records, globalParam);
@@ -359,6 +361,11 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     // 7. Вычисляем табличное значение температуры для средних высот зон
     analyzer.fillTabTemperature(temperatureTable, Tzones);
 
+    // 8. Вычитаем табличное значение, получаем TTi
+    analyzer.calculateTTi(Tzones);
+
+    // 9. Вычисляем TTcpm для зон
+    analyzer.calculateTTcpm(Tzones);
 
     qDebug() << "---температура для каждой точки---";
 
@@ -371,7 +378,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     for (const auto& T : Tzones)
     {
-        qDebug("height=%.2f Tn=%.2f Hi=%.2f dTvir=%.2f Tvrn=%.2f Ttab=%.2f", T.height, T.Tn, T.Hi, T.dTvir, T.Tvrn, T.Ttab);
+        qDebug("height=%.2f Tn=%.2f Hi=%.2f dTvir=%.2f Tvrn=%.2f Ttab=%.2f TTi=%.2f TTcpm=%.2f", T.height, T.Tn, T.Hi, T.dTvir, T.Tvrn, T.Ttab, T.TTi , T.TTcpm);
     }
 
 }

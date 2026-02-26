@@ -38,6 +38,8 @@ public:
     void calculateDTvir(std::vector<Tzone>& Tzones, UserConstants globalParam);
     void addVir(std::vector<Tzone>& Tzones);
     void fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Tzone>& zones);
+    void calculateTTi(std::vector<Tzone>& Tzones);
+
 
 
     double napr(double x, double z);
