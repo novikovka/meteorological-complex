@@ -79,7 +79,7 @@ struct Tzone {
     double Hi{}; // высота середины слоя
     double Tn{}; // температура зоны (на средней высоте зоны)
 
-    double TTi{}; //температура зоны - табличное значение
+    double TTi{}; //температура зоны минус табличное значение
     double TTcpm{};
     double dTvir{}; // виртуальная поправка (высота - средняя высота зоны)
     double Tvrn{}; //температура вместе с виртуальной поправкой
@@ -126,7 +126,10 @@ struct Mtd {
     double v{};
     double av{};
     double dh{};
-    double T{};
+
+    double TTi{};
+    double TTcpm{};
+
 
     Mtd(double height = 0.0) : h(height) {}
 };
@@ -143,7 +146,9 @@ struct Mts {
     //double v{};
     double aw{};
     double dh{};
-    double T{};
+
+    double TTi{};
+    double TTcpm{};
 
     Mts(double height = 0.0) : h(height) {}
 };

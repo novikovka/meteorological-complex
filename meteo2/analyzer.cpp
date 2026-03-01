@@ -382,8 +382,10 @@ void Analyzer::calculateDTvir(std::vector<Tzone>& Tzones, UserConstants globalPa
 
 void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Tzone>& zones)
 {
+
     if (temperatureTable.empty())
         return;
+
 
     for (auto& zone : zones)
     {
@@ -427,6 +429,56 @@ void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTab
     }
 }
 
+void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::vector<Tzone>& zones)
+{
+
+    if (DensityTable.empty())
+        return;
+
+
+    for (auto& zone : zones)
+    {
+        double H = zone.Hi;
+
+        // Находим первый элемент >= H
+        auto upper = DensityTable.lower_bound(H);
+
+        // --- Случай 1: H выше всех табличных высот ---
+        if (upper == DensityTable.end())
+        {
+            zone.Ttab = std::prev(upper)->second; // берём последнее значение
+            continue;
+        }
+
+        // --- Случай 2: точное совпадение ---
+        if (upper->first == H)
+        {
+            zone.Ttab = upper->second;
+            continue;
+        }
+
+        // --- Случай 3: H ниже минимальной высоты ---
+        if (upper == DensityTable.begin())
+        {
+            zone.Ttab = upper->second; // берём первое значение
+            continue;
+        }
+
+        // --- Случай 4: интерполяция ---
+        auto lower = std::prev(upper);
+
+        double H1 = lower->first;
+        double P1 = lower->second;
+
+        double H2 = upper->first;
+        double P2 = upper->second;
+
+        // Линейная интерполяция
+        zone.Ttab = P1 + (H - H1) * (P2 - P1) / (H2 - H1);
+    }
+}
+
+
 void Analyzer::calculateTTi(std::vector<Tzone>& Tzones){
     for (auto& zone : Tzones){
         zone.TTi = zone.Tvrn - zone.Ttab;
@@ -459,9 +511,11 @@ void Analyzer::calculateDeltaH(std::vector<Tzone>& Tzones){
     }
 }
 
+
 // плотность
 
-void Analyzer::calculatePi(std::vector<Tzone>& zones, UserConstants globalParam){
+// расчет давления в слое
+void Analyzer::calculatePn(std::vector<Tzone>& zones, UserConstants globalParam){
 
     zones[0].Pn = globalParam.P0;
     zones[1].Pn = globalParam.P0 * exp((-1/29.27*2)*(zones[1].height/zones[1].Tvrn));
@@ -479,3 +533,38 @@ void Analyzer::calculatePi(std::vector<Tzone>& zones, UserConstants globalParam)
         zones[i].Pn = zones[i-1].Pn * exp(e);
     }
 }
+
+// расчет плотности в слое
+void Analyzer::calculatePi(std::vector<Tzone>& zones){
+
+    for (size_t i = 0; i < zones.size(); ++i){
+
+        if (zones[i].Hi > 1000){
+            continue;
+        }else{
+            zones[i].Pi = (zones[i].Pn * 0.4646)/(zones[i].Tvrn + 273.15);
+        }
+    }
+}
+
+void Analyzer::calculatePPi(std::vector<Tzone>& zones){
+    for (size_t i = 0; i < zones.size(); ++i){
+
+        if (zones[i].Hi > 1000){
+            continue;
+        }else{
+            double x = (zones[i].Pi - zones[i].Pitab)/(zones[i].Pitab);
+            zones[i].PPi = x * 100;
+        }
+    }
+}
+
+void Analyzer::calculatePPcpm(std::vector<Tzone>& zones){
+    zones[0].PPcpm = zones[0].PPi;
+    for (size_t i = 0; i < zones.size(); ++i){
+        double a = ((zones[i-1].PPcpm * zones[i-1].height)+(zones[i].PPi * zones[i].dH));
+        zones[i].PPcpm = a / zones[i].height;
+    }
+}
+
+

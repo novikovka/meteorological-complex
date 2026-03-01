@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <vector>
+
+#include "types.h"   // Coordinate, Zone, Mtd, Mts
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,14 +29,23 @@ private slots:
     void on_pushButtonLoadTempLog_clicked();
     void on_pushButtonCalculateTemp_clicked();
 
-
 private:
     Ui::MainWindow *ui;
 
+    // -----------------------------
+    // ДАННЫЕ ПРОЕКТА (состояние окна)
+    // -----------------------------
+
+    std::vector<Coordinate> coordinates;
+    std::vector<Zone> zones;
+    std::vector<Mtd> mtd;
+    std::vector<Mts> mts;
+
     // путь к температурному лог-файлу
     QString tempLogFilePath;
-    // QString secondCsvFilePath;
 
+    // создание уровней бюллетеня
+    void initializeBulletinLevels();
 };
 
 #endif // MAINWINDOW_H

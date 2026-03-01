@@ -39,7 +39,67 @@ public:
     void addVir(std::vector<Tzone>& Tzones);
     void fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Tzone>& zones);
     void calculateTTi(std::vector<Tzone>& Tzones);
+    //void interpolateTTiToMtd(const std::vector<Tzone>& Tzones,std::vector<Mtd>& mtd);
+    //void interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones,std::vector<Mtd>& mtd);
 
+    //template <typename T>
+    //void interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones,std::vector<T>& bullutin);
+
+    template<typename T>
+    void interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones,std::vector<T>& bullutin){
+        if (Tzones.size() < 2)
+            return;
+
+        for (auto& m : bullutin)
+        {
+            double h = m.h;
+
+            // Ниже минимальной высоты
+            if (h <= Tzones.front().Hi)
+            {
+                m.TTi   = Tzones.front().TTi;
+                m.TTcpm = Tzones.front().TTcpm;
+                continue;
+            }
+
+            // Выше максимальной высоты
+            if (h >= Tzones.back().Hi)
+            {
+                m.TTi   = Tzones.back().TTi;
+                m.TTcpm = Tzones.back().TTcpm;
+                continue;
+            }
+
+            // Поиск интервала
+            for (size_t i = 0; i < Tzones.size() - 1; ++i)
+            {
+                double H1 = Tzones[i].Hi;
+                double H2 = Tzones[i + 1].Hi;
+
+                if (h >= H1 && h <= H2)
+                {
+                    double k = (h - H1) / (H2 - H1);
+
+                    // Интерполяция TTi
+                    m.TTi = Tzones[i].TTi +
+                            (Tzones[i + 1].TTi - Tzones[i].TTi) * k;
+
+                    // Интерполяция TTcpm
+                    m.TTcpm = Tzones[i].TTcpm +
+                              (Tzones[i + 1].TTcpm - Tzones[i].TTcpm) * k;
+
+                    break;
+                }
+            }
+        }
+    }
+
+    //давление и плотность
+    void fillTabDensity(const std::map<double, double>& DensityTable,std::vector<Tzone>& zones);
+    void calculatePn(std::vector<Tzone>& zones, UserConstants globalParam);
+    void calculatePi(std::vector<Tzone>& zones);
+    void calculatePPi(std::vector<Tzone>& zones);
+    void calculatePPcpm(std::vector<Tzone>& zones);
 
 
     double napr(double x, double z);
