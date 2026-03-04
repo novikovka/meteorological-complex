@@ -14,14 +14,6 @@
 #include <array>
 #include <map>
 
-/*
-MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWindow)
-{
-    ui->setupUi(this);
-
-}
-*/
-
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -80,12 +72,8 @@ void MainWindow::on_pushButtonLoad_clicked()
     if (fileName.isEmpty())
         return;
 
-    // 🔹 очищаем только переменные данные
     coordinates.clear();
     zones.clear();
-
-    // 🔹 важно: НЕ очищаем уровни mtd и mts,
-    // а только сбрасываем их расчетные поля при необходимости
 
     Zone firstZone(0.0);
     Mtd firstMtd(4.0);
@@ -112,9 +100,6 @@ void MainWindow::on_pushButtonLoad_clicked()
     Analyzer analyzer;
 
     analyzer.createZones(zones, coordinates);
-
-    // 🔹 перед пересчётом можно сбросить расчетные параметры
-    // (если классы Mtd/Mts хранят старые значения)
 
     analyzer.calculateVk(zones);
     analyzer.calculateVi(zones, mtd);
@@ -143,27 +128,6 @@ void MainWindow::on_pushButtonLoadTempLog_clicked()
 
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
-
-/*
-void MainWindow::on_pushButtonLoadSecondCsv_clicked()
-{
-    QString fileName = QFileDialog::getOpenFileName(
-        this,
-        "Открыть второй CSV файл",
-        "",
-        "CSV files (*.csv)");
-
-    if (fileName.isEmpty())
-        return;
-
-    secondCsvFilePath = fileName;
-
-    QMessageBox::information(this,
-                             "Файл загружен",
-                             "Второй CSV файл успешно выбран.");
-}
-*/
-
 
 void MainWindow::on_pushButtonCalculateTemp_clicked()
 {
@@ -225,63 +189,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
                 .arg(rec.dtp)
             );
     }
-
-    /*
-    std::unordered_map<double, double> Tvir;
-
-    Tvir[0] = 0.3;
-    Tvir[1] = 0.3;
-    Tvir[2] = 0.4;
-    Tvir[3] = 0.4;
-    Tvir[4] = 0.4;
-    Tvir[5] = 0.5;
-    Tvir[6] = 0.5;
-    Tvir[7] = 0.6;
-    Tvir[8] = 0.6;
-    Tvir[9] = 0.7;
-    Tvir[10] = 0.7;
-    Tvir[11] = 0.8;
-    Tvir[12] = 0.8;
-    Tvir[13] = 0.8;
-    Tvir[14] = 0.9;
-    Tvir[15] = 0.9;
-    Tvir[16] = 1.0;
-    Tvir[17] = 1.0;
-    Tvir[18] = 1.1;
-    Tvir[19] = 1.2;
-    Tvir[20] = 1.3;
-    Tvir[21] = 1.4;
-    Tvir[22] = 1.5;
-    Tvir[23] = 1.6;
-    Tvir[24] = 1.7;
-    Tvir[25] = 1.8;
-    Tvir[26] = 1.9;
-    Tvir[27] = 2.0;
-    Tvir[28] = 2.2;
-    Tvir[29] = 2.3;
-    Tvir[30] = 2.4;
-    Tvir[31] = 2.55;
-    Tvir[32] = 2.7;
-    Tvir[33] = 2.9;
-    Tvir[34] = 3.1;
-    Tvir[35] = 3.3;
-    Tvir[36] = 3.5;
-    Tvir[37] = 3.7;
-    Tvir[38] = 3.9;
-    Tvir[39] = 4.15;
-    Tvir[40] = 4.4;
-    Tvir[41] = 4.65;
-    Tvir[42] = 4.9;
-    Tvir[43] = 5.2;
-    Tvir[44] = 5.5;
-    Tvir[45] = 5.8;
-    Tvir[46] = 6.1;
-    Tvir[47] = 6.4;
-    Tvir[48] = 6.7;
-    Tvir[49] = 7.05;
-    Tvir[50] = 7.4;
-    */
-
 
     const std::array<double, 51> Tvir = {
         0.3, 0.3, 0.4, 0.4, 0.4,
@@ -383,6 +290,11 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     analyzer.calculatePPi(Tzones);
     analyzer.calculatePPcpm(Tzones);
 
+    // Интерполяция плотности, получаем значения для "метеодействительного"
+    analyzer.interpolateDensityToBullutin(Tzones,mtd);
+
+    analyzer.interpolateDensityToBullutin(Tzones,mts);
+
     qDebug() << "---температура для каждой точки---";
 
     for (const auto& r : records)
@@ -401,21 +313,21 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     for (const auto& i : mtd)
     {
-        qDebug("h=%.2f TTi=%.2f TTcpm=%.2f", i.h, i.TTi, i.TTcpm);
+        qDebug("h=%.2f TTi=%.2f TTcpm=%.2f PPi=%.2f PPcpm=%.2f", i.h, i.TTi, i.TTcpm, i.PPi, i.PPcpm);
     }
 
     qDebug() << "Интерполяция: метеосредний";
 
     for (const auto& i : mts)
     {
-        qDebug("h=%.2f TTi=%.2f TTcpm=%.2f", i.h, i.TTi, i.TTcpm);
+        qDebug("h=%.2f TTi=%.2f TTcpm=%.2f PPi=%.2f PPcpm=%.2f", i.h, i.TTi, i.TTcpm, i.PPi, i.PPcpm);
     }
 
     qDebug() << "Давление и плотность";
 
     for (const auto& T : Tzones)
     {
-        qDebug("Pn=%.2f Pi=%.2f PPi=%.2f Pitab=%.2f PPcpm=%.2f", T.Pn, T.Pi, T.PPi, T.Pitab, T.PPcpm);
+        qDebug("height=%.2f Pn=%.2f Pi=%.2f PPi=%.2f Pitab=%.2f PPcpm=%.2f",T.height, T.Pn, T.Pi, T.PPi, T.Pitab, T.PPcpm);
     }
 
 }

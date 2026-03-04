@@ -94,6 +94,55 @@ public:
         }
     }
 
+    template<typename T>
+    void interpolateDensityToBullutin(const std::vector<Tzone>& Tzones,std::vector<T>& bullutin){
+        if (Tzones.size() < 2)
+            return;
+
+        for (auto& m : bullutin)
+        {
+            double h = m.h;
+
+            // Ниже минимальной высоты
+            if (h <= Tzones.front().Hi)
+            {
+                m.PPi   = Tzones.front().PPi;
+                m.PPcpm = Tzones.front().PPcpm;
+                continue;
+            }
+
+            // Выше максимальной высоты
+            if (h >= Tzones.back().Hi)
+            {
+                m.PPi   = Tzones.back().PPi;
+                m.PPcpm = Tzones.back().PPcpm;
+                continue;
+            }
+
+            // Поиск интервала
+            for (size_t i = 0; i < Tzones.size() - 1; ++i)
+            {
+                double H1 = Tzones[i].Hi;
+                double H2 = Tzones[i + 1].Hi;
+
+                if (h >= H1 && h <= H2)
+                {
+                    double k = (h - H1) / (H2 - H1);
+
+                    // Интерполяция TTi
+                    m.PPi = Tzones[i].PPi +
+                            (Tzones[i + 1].PPi - Tzones[i].PPi) * k;
+
+                    // Интерполяция TTcpm
+                    m.PPcpm = Tzones[i].PPcpm +
+                              (Tzones[i + 1].PPcpm - Tzones[i].PPcpm) * k;
+
+                    break;
+                }
+            }
+        }
+    }
+
     //давление и плотность
     void fillTabDensity(const std::map<double, double>& DensityTable,std::vector<Tzone>& zones);
     void calculatePn(std::vector<Tzone>& zones, UserConstants globalParam);

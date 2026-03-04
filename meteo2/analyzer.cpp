@@ -446,21 +446,21 @@ void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::
         // --- Случай 1: H выше всех табличных высот ---
         if (upper == DensityTable.end())
         {
-            zone.Ttab = std::prev(upper)->second; // берём последнее значение
+            zone.Pitab = std::prev(upper)->second; // берём последнее значение
             continue;
         }
 
         // --- Случай 2: точное совпадение ---
         if (upper->first == H)
         {
-            zone.Ttab = upper->second;
+            zone.Pitab = upper->second;
             continue;
         }
 
         // --- Случай 3: H ниже минимальной высоты ---
         if (upper == DensityTable.begin())
         {
-            zone.Ttab = upper->second; // берём первое значение
+            zone.Pitab = upper->second; // берём первое значение
             continue;
         }
 
@@ -474,7 +474,7 @@ void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::
         double P2 = upper->second;
 
         // Линейная интерполяция
-        zone.Ttab = P1 + (H - H1) * (P2 - P1) / (H2 - H1);
+        zone.Pitab = P1 + (H - H1) * (P2 - P1) / (H2 - H1);
     }
 }
 
@@ -511,6 +511,55 @@ void Analyzer::calculateDeltaH(std::vector<Tzone>& Tzones){
     }
 }
 
+/*
+void Analyzer::interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones,std::vector<Mtd>& mtd){
+    if (Tzones.size() < 2)
+        return;
+
+    for (auto& m : mtd)
+    {
+        double h = m.h;
+
+        // Ниже минимальной высоты
+        if (h <= Tzones.front().Hi)
+        {
+            m.TTi   = Tzones.front().TTi;
+            m.TTcpm = Tzones.front().TTcpm;
+            continue;
+        }
+
+        // Выше максимальной высоты
+        if (h >= Tzones.back().Hi)
+        {
+            m.TTi   = Tzones.back().TTi;
+            m.TTcpm = Tzones.back().TTcpm;
+            continue;
+        }
+
+        // Поиск интервала
+        for (size_t i = 0; i < Tzones.size() - 1; ++i)
+        {
+            double H1 = Tzones[i].Hi;
+            double H2 = Tzones[i + 1].Hi;
+
+            if (h >= H1 && h <= H2)
+            {
+                double k = (h - H1) / (H2 - H1);
+
+                // Интерполяция TTi
+                m.TTi = Tzones[i].TTi +
+                        (Tzones[i + 1].TTi - Tzones[i].TTi) * k;
+
+                // Интерполяция TTcpm
+                m.TTcpm = Tzones[i].TTcpm +
+                          (Tzones[i + 1].TTcpm - Tzones[i].TTcpm) * k;
+
+                break;
+            }
+        }
+    }
+}
+*/
 
 // плотность
 
@@ -547,6 +596,7 @@ void Analyzer::calculatePi(std::vector<Tzone>& zones){
     }
 }
 
+
 void Analyzer::calculatePPi(std::vector<Tzone>& zones){
     for (size_t i = 0; i < zones.size(); ++i){
 
@@ -561,10 +611,12 @@ void Analyzer::calculatePPi(std::vector<Tzone>& zones){
 
 void Analyzer::calculatePPcpm(std::vector<Tzone>& zones){
     zones[0].PPcpm = zones[0].PPi;
-    for (size_t i = 0; i < zones.size(); ++i){
+    for (size_t i = 1; i < zones.size(); ++i){
         double a = ((zones[i-1].PPcpm * zones[i-1].height)+(zones[i].PPi * zones[i].dH));
         zones[i].PPcpm = a / zones[i].height;
     }
 }
+
+
 
 

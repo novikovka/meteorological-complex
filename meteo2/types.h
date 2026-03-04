@@ -130,6 +130,9 @@ struct Mtd {
     double TTi{};
     double TTcpm{};
 
+    double PPi{}; //действительное отклонение плотности в слое
+    double PPcpm{}; //среднее отклонение плотности в слое
+
 
     Mtd(double height = 0.0) : h(height) {}
 };
@@ -149,6 +152,9 @@ struct Mts {
 
     double TTi{};
     double TTcpm{};
+
+    double PPi{}; //действительное отклонение плотности в слое
+    double PPcpm{}; //среднее отклонение плотности в слое
 
     Mts(double height = 0.0) : h(height) {}
 };
