@@ -899,6 +899,7 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		../../types.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../mainwindow.h -o moc_mainwindow.cpp
 
@@ -954,6 +955,7 @@ main.o: ../../main.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		../../types.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../../main.cpp
@@ -963,6 +965,7 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		../../types.h \
 		ui_mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QFileDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qfiledialog.h \
@@ -971,7 +974,6 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDebug \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdebug.h \
 		../../fileparser.h \
-		../../types.h \
 		../../analyzer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../mainwindow.cpp
 

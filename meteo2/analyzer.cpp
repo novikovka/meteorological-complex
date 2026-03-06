@@ -1,4 +1,6 @@
 #include "analyzer.h"
+// #include "types.h"
+
 #include <cmath>
 #include <QtMath>
 #include <QDebug>
@@ -63,15 +65,6 @@ void Analyzer::calculateDHmtd(std::vector<Mtd>& mtd){
     }
 }
 
-/*
-void Analyzer::calculateDHmts(std::vector<Mts>& mts){
-    for (size_t i = 0; i < mts.size(); ++i)
-    {
-        mts[i].dh = mts[i].h - mts[i-1].h;
-    }
-}
-*/
-
 void Analyzer::calculateDHmts(std::vector<Mts>& mts){
     for (size_t i = 1; i < mts.size(); ++i)
     {
@@ -85,10 +78,10 @@ void Analyzer::calculateVk(std::vector<Zone>& zones){
     if (zones.empty())
         return;
 
-    //zones[0].vx = 0.0;
-    //zones[0].vz = 0.0;
-    //zones[0].dh = 0.0;
-    //zones[0].y  = 0.0;
+    zones[0].vx = 0.0;
+    zones[0].vz = 0.0;
+    zones[0].dh = 0.0;
+    zones[0].y  = 0.0;
 
     for (size_t i = 1; i < zones.size(); ++i)
     {
@@ -105,7 +98,7 @@ void Analyzer::calculateVk(std::vector<Zone>& zones){
 }
 
 void Analyzer::calculateVm(const std::vector<Zone>& zones,std::vector<Mts>& mts){
-    for (size_t m = 0; m < mts.size(); ++m){
+    for (size_t m = 1; m < mts.size(); ++m){
         double sumX{};
         double sumZ{};
 
@@ -236,6 +229,8 @@ void Analyzer::createBullutinMts(std::vector<Mts>& mts)
 
 void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants globalParam){
     for(auto& r : records){
+        if (std::abs(r.QT) < EPS)
+            continue;
         double Yt = r.QO / r.QT;
         double Rt = (globalParam.R1 / Yt) - globalParam.R2;
         double denominator = log(pow(10,3)) + log(Rt / globalParam.A);
@@ -246,20 +241,20 @@ void Analyzer::calculateT(std::vector<TemperatureRecord>& records, UserConstants
     }
 }
 
-void Analyzer::createTzones(std::vector<Tzone>& Tzones)
+void Analyzer::createZones(std::vector<Zone>& Zones)
 {
-    Tzones.clear();
+    Zones.clear();
 
     auto addZones = [&](double from, double to, double step)
     {
         for (double h = from; h < to; h += step)
         {
-            Tzones.emplace_back(h);
+            Zones.emplace_back(h);
         }
     };
 
     // первая зона
-    Tzones.emplace_back(0.0);
+    Zones.emplace_back(0.0);
 
     // до 500 м — шаг 100
     addZones(100.0, 500.0, 100.0);
@@ -274,11 +269,11 @@ void Analyzer::createTzones(std::vector<Tzone>& Tzones)
     addZones(14000.0, 50001.0, 500.0);
 }
 
-void Analyzer::calculateMediumHeight(std::vector<Tzone>& Tzones)
+void Analyzer::calculateMediumHeight(std::vector<Zone>& Zones)
 {
-    for (size_t i = 1; i < Tzones.size(); ++i)
+    for (size_t i = 1; i < Zones.size(); ++i)
     {
-        Tzones[i].Hi = (Tzones[i - 1].height + Tzones[i].height) / 2.0;
+        Zones[i].Hi = (Zones[i - 1].height + Zones[i].height) / 2.0;
     }
 }
 
@@ -331,15 +326,15 @@ void Analyzer::addRadio(std::vector<TemperatureRecord>& records){
     }
 }
 
-void Analyzer::addVir(std::vector<Tzone>& Tzones){
-    for (auto& zone : Tzones){
+void Analyzer::addVir(std::vector<Zone>& Zones){
+    for (auto& zone : Zones){
         //rec.T1 = rec.T + rec.dtp;
         zone.Tvrn = zone.Tn + zone.dTvir;
     }
 }
 
 // Метод для вычисления средних температур по индексам
-void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::vector<Tzone>& Tzones)
+void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::vector<Zone>& Zones)
 {
     // Словарь: key = индекс, value = пара (сумма T, количество записей)
     std::unordered_map<int, std::pair<double, int>> sumCount;
@@ -350,37 +345,37 @@ void Analyzer::calculateTn(const std::vector<TemperatureRecord>& records,std::ve
         sumCount[rec.index].second += 1;    // количество записей
     }
 
-    // 2. Записать средние значения в Tzones по порядку
-    for (size_t i = 0; i < Tzones.size(); ++i) {
+    // 2. Записать средние значения в Zones по порядку
+    for (size_t i = 0; i < Zones.size(); ++i) {
         int idx = static_cast<int>(i + 1); // если индексы начинаются с 1
         if (sumCount.find(idx) != sumCount.end() && sumCount[idx].second != 0) {
-            Tzones[i].Tn = sumCount[idx].first / sumCount[idx].second;
+            Zones[i].Tn = sumCount[idx].first / sumCount[idx].second;
         } else {
-            Tzones[i].Tn = 0.0; // или другое значение по умолчанию
+            Zones[i].Tn = 0.0; // или другое значение по умолчанию
         }
     }
 }
 
-void Analyzer::calculateDTvir(std::vector<Tzone>& Tzones, UserConstants globalParam){
+void Analyzer::calculateDTvir(std::vector<Zone>& Zones, UserConstants globalParam){
 
 
-    for (size_t i = 1; i < Tzones.size(); ++i)
+    for (size_t i = 1; i < Zones.size(); ++i)
     {
-        double Hkm = Tzones[i].Hi / 1000.0;
+        double Hkm = Zones[i].Hi / 1000.0;
 
-        double x1 = (2.3 * (Tzones[i].Tn + 273.15) * globalParam.U0) / (100 * globalParam.P0);
+        double x1 = (2.3 * (Zones[i].Tn + 273.15) * globalParam.U0) / (100 * globalParam.P0);
 
         double x2 = std::exp(((310 * globalParam.T0) - std::pow(globalParam.T0, 2)) / 4300);
 
         //double x3 = std::exp(-2.3 * (0.0947 * Tzones[i].Hi + 0.0138 * std::pow(Tzones[i].Hi,2)));
         double x3 = std::exp(-2.3 * (0.0947 * Hkm + 0.0138 * std::pow(Hkm, 2)));
 
-        Tzones[i].dTvir = x1 * x2 * x3;
+        Zones[i].dTvir = x1 * x2 * x3;
     }
 }
 
 
-void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Tzone>& zones)
+void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTable,std::vector<Zone>& zones)
 {
 
     if (temperatureTable.empty())
@@ -429,7 +424,7 @@ void Analyzer::fillTabTemperature(const std::map<double, double>& temperatureTab
     }
 }
 
-void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::vector<Tzone>& zones)
+void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::vector<Zone>& zones)
 {
 
     if (DensityTable.empty())
@@ -479,8 +474,8 @@ void Analyzer::fillTabDensity(const std::map<double, double>& DensityTable,std::
 }
 
 
-void Analyzer::calculateTTi(std::vector<Tzone>& Tzones){
-    for (auto& zone : Tzones){
+void Analyzer::calculateTTi(std::vector<Zone>& Zones){
+    for (auto& zone : Zones){
         zone.TTi = zone.Tvrn - zone.Ttab;
     }
 }
@@ -491,7 +486,7 @@ void Analyzer::calculateTpni(std::vector<TemperatureRecord>& records){ // тем
     }
 }
 
-void Analyzer::calculateTTcpm(std::vector<Tzone>& zones){
+void Analyzer::calculateTTcpm(std::vector<Zone>& zones){
 
     zones[0].TTcpm = zones[0].TTi;
     for (size_t i = 1; i < zones.size(); ++i)
@@ -504,10 +499,10 @@ void Analyzer::calculateTTcpm(std::vector<Tzone>& zones){
     }
 }
 
-void Analyzer::calculateDeltaH(std::vector<Tzone>& Tzones){
-    Tzones[0].dH = 0;
-    for (size_t i = 1; i < Tzones.size(); ++i){
-        Tzones[i].dH = Tzones[i].height - Tzones[i-1].height;
+void Analyzer::calculateDeltaH(std::vector<Zone>& Zones){
+    Zones[0].dH = 0;
+    for (size_t i = 1; i < Zones.size(); ++i){
+        Zones[i].dH = Zones[i].height - Zones[i-1].height;
     }
 }
 
@@ -564,7 +559,7 @@ void Analyzer::interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones
 // плотность
 
 // расчет давления в слое
-void Analyzer::calculatePn(std::vector<Tzone>& zones, UserConstants globalParam){
+void Analyzer::calculatePn(std::vector<Zone>& zones, UserConstants globalParam){
 
     zones[0].Pn = globalParam.P0;
     zones[1].Pn = globalParam.P0 * exp((-1/29.27*2)*(zones[1].height/zones[1].Tvrn));
@@ -584,7 +579,7 @@ void Analyzer::calculatePn(std::vector<Tzone>& zones, UserConstants globalParam)
 }
 
 // расчет плотности в слое
-void Analyzer::calculatePi(std::vector<Tzone>& zones){
+void Analyzer::calculatePi(std::vector<Zone>& zones){
 
     for (size_t i = 0; i < zones.size(); ++i){
 
@@ -597,7 +592,7 @@ void Analyzer::calculatePi(std::vector<Tzone>& zones){
 }
 
 
-void Analyzer::calculatePPi(std::vector<Tzone>& zones){
+void Analyzer::calculatePPi(std::vector<Zone>& zones){
     for (size_t i = 0; i < zones.size(); ++i){
 
         if (zones[i].Hi > 1000){
@@ -609,13 +604,65 @@ void Analyzer::calculatePPi(std::vector<Tzone>& zones){
     }
 }
 
-void Analyzer::calculatePPcpm(std::vector<Tzone>& zones){
+void Analyzer::calculatePPcpm(std::vector<Zone>& zones){
     zones[0].PPcpm = zones[0].PPi;
     for (size_t i = 1; i < zones.size(); ++i){
         double a = ((zones[i-1].PPcpm * zones[i-1].height)+(zones[i].PPi * zones[i].dH));
         zones[i].PPcpm = a / zones[i].height;
     }
 }
+
+// Расчет вертикальной устойчивости
+
+
+void Analyzer::calculateTforR(std::vector<Zone>& zones){
+
+    double Ga = 0.0098;
+    double g = 9.8065;
+
+    for (size_t i = 1; i < zones.size(); ++i){
+
+        double t0 = zones[i-1].Tvrn;
+        double t50 = zones[i].Tvrn;
+
+        zones[i].T = (t0 + t50 / 2) + 273.15;
+
+        double chis = (Ga - (t0 - t50))/50;
+
+        double znam = std::pow((zones[i].vx - zones[i-1].vx)/50, 2) + std::pow((zones[i].vz - zones[i-1].vz)/50, 2);
+
+        zones[i].Ri = (g/zones[i].T) * (chis/znam);
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

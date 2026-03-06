@@ -17,6 +17,10 @@ constexpr double EPS = 1e-9;
 //constexpr double R1 = 32.0;
 //constexpr double R2 = 32.0;
 
+constexpr double g = 9.8065;
+constexpr double Ga = 0.0098;
+
+
 
 struct Coordinate { // посчитанные логи ветра
     double X{};
@@ -73,7 +77,16 @@ struct Tzone {
 };
 */
 
-struct Tzone {
+struct Zone {
+    // то, что взято из первой структуры
+    double x{};
+    double z{};
+    double s{};
+    double vx{};
+    double vz{};
+    double dh{};
+    double y{};
+    //
     double height{}; // нижняя граница зоны
     double dH{}; // тощина зоны
     double Hi{}; // высота середины слоя
@@ -92,14 +105,17 @@ struct Tzone {
     double PPi{}; //действительное отклонение плотности в слое
     double PPcpm{}; //среднее отклонение плотности в слое
 
-    Tzone() = default;
+    double Ri{}; // вертикальная устойчивость
+    double T{}; // температура для устойчивости
 
-    explicit Tzone(double h)
+    Zone() = default;
+
+    explicit Zone(double h)
         : height(h)
     {}
 };
 
-
+/*
 struct Zone {
     double height{};
     double x{};
@@ -116,6 +132,7 @@ struct Zone {
 
     Zone(double h = 0.0) : height(h) {}
 };
+*/
 
 struct Mtd {
     double h{};

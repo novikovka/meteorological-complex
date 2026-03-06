@@ -41,11 +41,14 @@ private:
     std::vector<Mtd> mtd;
     std::vector<Mts> mts;
 
+    // путь к ветренному лог-файлу
+    QString windLogFilePath;
+
     // путь к температурному лог-файлу
     QString tempLogFilePath;
 
     // создание уровней бюллетеня
-    void initializeBulletinLevels();
+    //void initializeBulletinLevels();
 };
 
 #endif // MAINWINDOW_H

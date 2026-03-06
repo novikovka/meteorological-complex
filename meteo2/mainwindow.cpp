@@ -18,13 +18,6 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWind
 {
     ui->setupUi(this);
 
-    // Можно заранее зарезервировать память
-    coordinates.reserve(10000);
-    zones.reserve(300);
-    mtd.reserve(30);
-    mts.reserve(30);
-
-    initializeBulletinLevels();   // вызов функции создания высот бюллетеней
 }
 
 MainWindow::~MainWindow()
@@ -32,88 +25,24 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::initializeBulletinLevels()
-{
-    mtd.clear();
-    mts.clear();
-
-    // уровни МДТ
-    const std::vector<double> heights = {
-        25, 75, 150, 300, 500, 700, 900,
-        1100, 1400, 1800, 2200, 2700,
-        3500, 4500, 5500, 7000, 9000,
-        11000, 13000, 16000, 20000,
-        24000, 28000
-    };
-
-    for (double h : heights)
-        mtd.emplace_back(h);
-
-    // уровни МТС
-    const std::vector<double> h_mts = {
-        200, 400, 800, 1200, 1600,
-        2000, 2400, 3000, 4000, 5000,
-        6000, 8000, 10000, 12000, 14000,
-        18000, 22000, 26000, 30000
-    };
-
-    for (double h : h_mts)
-        mts.emplace_back(h);
-}
-
-void MainWindow::on_pushButtonLoad_clicked()
+void MainWindow::on_pushButtonLoad_clicked() // обработка логов для ветра
 {
     QString fileName = QFileDialog::getOpenFileName(
         this,
-        "Открыть CSV файл",
+        "Открыть log-файл температуры",
         "",
         "CSV files (*.csv)");
 
     if (fileName.isEmpty())
         return;
 
-    coordinates.clear();
-    zones.clear();
+    windLogFilePath = fileName;
 
-    Zone firstZone(0.0);
-    Mtd firstMtd(4.0);
-
-    FileParser parser;
-
-    if (!parser.parseCSV(fileName, coordinates, firstZone, firstMtd))
-    {
-        QMessageBox::critical(this, "Ошибка", "Не удалось открыть файл");
-        return;
-    }
-
-    zones.push_back(firstZone);
-
-    // Если нужно — обновляем первый уровень МДТ
-    if (!mtd.empty())
-        mtd[0] = firstMtd;
-
-    // Вывод координат в интерфейс
-    ui->listWidgetX->clear();
-    for (const auto& c : coordinates)
-        ui->listWidgetX->addItem(c.toString());
-
-    Analyzer analyzer;
-
-    analyzer.createZones(zones, coordinates);
-
-    analyzer.calculateVk(zones);
-    analyzer.calculateVi(zones, mtd);
-    analyzer.calculateV(mtd);
-    analyzer.calculateDHmtd(mtd);
-    analyzer.calculateDHmts(mts);
-    analyzer.calculateVm(zones, mts);
-    analyzer.calculateWm(mts);
-
-    analyzer.createBullutin(mtd);
-    analyzer.createBullutinMts(mts);
+    QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
 
-void MainWindow::on_pushButtonLoadTempLog_clicked()
+
+void MainWindow::on_pushButtonLoadTempLog_clicked() // обработка логов для температуры
 {
     QString fileName = QFileDialog::getOpenFileName(
         this,
@@ -131,9 +60,96 @@ void MainWindow::on_pushButtonLoadTempLog_clicked()
 
 void MainWindow::on_pushButtonCalculateTemp_clicked()
 {
-    Analyzer analyzer;
+    // Можно заранее зарезервировать память
+    coordinates.reserve(10000);
+    zones.reserve(300);
+    mtd.reserve(30);
+    mts.reserve(30);
 
+    Zone firstZone(0.0);
+    Mtd firstMtd(4.0);
+
+    // уровни МДТ
+    const std::vector<double> heights = {
+        25, 75, 150, 300, 500, 700, 900,
+        1100, 1400, 1800, 2200, 2700,
+        3500, 4500, 5500, 7000, 9000,
+        11000, 13000, 16000, 20000,
+        24000, 28000
+    };
+
+    //заполнение МТД
+    for (double h : heights)
+        mtd.emplace_back(h);
+
+    // уровни МТС
+    const std::vector<double> h_mts = {
+        200, 400, 800, 1200, 1600,
+        2000, 2400, 3000, 4000, 5000,
+        6000, 8000, 10000, 12000, 14000,
+        18000, 22000, 26000, 30000
+    };
+
+    //заполнение МТС
+    for (double h : h_mts)
+        mts.emplace_back(h);
+
+    Analyzer analyzer;
     UserConstants globalParam;
+    FileParser parser;
+
+
+    if (!windLogFilePath.isEmpty())
+    {
+        if (!parser.parseCSV(windLogFilePath, coordinates, firstZone, firstMtd))
+        {
+            QMessageBox::critical(this,
+                                  "Ошибка",
+                                  "Не удалось открыть или прочитать лог ветра.");
+            return;
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this,
+                             "Ошибка",
+                             "Сначала загрузите лог-файл.");
+        return;
+    }
+
+    zones.push_back(firstZone);
+    mtd.push_back(firstMtd);
+
+    // Если нужно — обновляем первый уровень МДТ
+    if (!mtd.empty())
+        mtd[0] = firstMtd;
+
+    // Вывод координат в интерфейс
+    ui->listWidgetX->clear();
+    for (const auto& c : coordinates)
+        ui->listWidgetX->addItem(c.toString());
+
+    //std::vector<Zone> zones;
+    zones.reserve(300);
+
+    //analyzer.createTzones(Tzones);
+
+    analyzer.createZones(zones, coordinates);
+
+
+    analyzer.calculateVk(zones);
+    analyzer.calculateVi(zones, mtd);
+    analyzer.calculateV(mtd);
+    analyzer.calculateDHmtd(mtd);
+    analyzer.calculateDHmts(mts);
+    analyzer.calculateVm(zones, mts);
+    analyzer.calculateWm(mts);
+
+    analyzer.createBullutin(mtd);
+    analyzer.createBullutinMts(mts);
+
+
+    // ТЕМПЕРАТУРА !!!!!!!!!!!!
 
     globalParam.A = ui->doubleSpinBoxA->value();
     globalParam.B = ui->doubleSpinBoxB->value();
@@ -147,11 +163,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     qDebug("A=%.2f B=%.2f C=%.2f R1=%.2f R2=%.2f", globalParam.A, globalParam.B, globalParam.C, globalParam.R1, globalParam.R2);
 
-    std::vector<Tzone> Tzones;
-    Tzones.reserve(300);
-
-    analyzer.createTzones(Tzones);
-
 
     if (tempLogFilePath.isEmpty())
     {
@@ -162,7 +173,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     }
 
     // Создаём объект парсера
-    FileParser parser;
+
 
     // Вектор для хранения записей температуры
     std::vector<TemperatureRecord> records;
@@ -244,7 +255,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     };
 
     // 0. Считаем толщину зоны
-    analyzer.calculateDeltaH(Tzones);
+    analyzer.calculateDeltaH(zones);
 
     // 1. Считаем температуру для каждого измерения
     analyzer.calculateT(records, globalParam);
@@ -253,47 +264,50 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     analyzer.addRadio(records);
 
     // 3. Температура для каждой зоны
-    analyzer.calculateTn(records, Tzones);
+    analyzer.calculateTn(records, zones);
 
     // 4. Вычисляем среднюю высоту зоны
-    analyzer.calculateMediumHeight(Tzones);
+    analyzer.calculateMediumHeight(zones);
 
     // 5. Вычисляем виртуальную поправку для каждой зоны
-    analyzer.calculateDTvir(Tzones, globalParam);
+    analyzer.calculateDTvir(zones, globalParam);
 
     // 6. Прибавляем виртуальную поправку к температурам зон
-    analyzer.addVir(Tzones);
+    analyzer.addVir(zones);
 
     // 7. Вычисляем табличное значение температуры для средних высот зон
-    analyzer.fillTabTemperature(temperatureTable, Tzones);
+    analyzer.fillTabTemperature(temperatureTable, zones);
 
     // 8. Вычитаем табличное значение, получаем TTi
-    analyzer.calculateTTi(Tzones);
+    analyzer.calculateTTi(zones);
 
     // 9. Вычисляем TTcpm для зон
-    analyzer.calculateTTcpm(Tzones);
+    analyzer.calculateTTcpm(zones);
 
     // 10. Интерполяция, получаем значения для "метеодействительного"
-    analyzer.interpolateTemperatureToBullutin(Tzones,mtd);
+    analyzer.interpolateTemperatureToBullutin(zones,mtd);
 
-    analyzer.interpolateTemperatureToBullutin(Tzones,mts);
+    analyzer.interpolateTemperatureToBullutin(zones,mts);
 
 
     // Давление и плотность
 
     // 1. Расчет табличной плотности для каждой зоны
-    analyzer.fillTabDensity(DensityTable,Tzones);
+    analyzer.fillTabDensity(DensityTable,zones);
 
     // 2. Расчет давления в зоне
-    analyzer.calculatePn(Tzones,globalParam);
-    analyzer.calculatePi(Tzones);
-    analyzer.calculatePPi(Tzones);
-    analyzer.calculatePPcpm(Tzones);
+    analyzer.calculatePn(zones,globalParam);
+    analyzer.calculatePi(zones);
+    analyzer.calculatePPi(zones);
+    analyzer.calculatePPcpm(zones);
 
     // Интерполяция плотности, получаем значения для "метеодействительного"
-    analyzer.interpolateDensityToBullutin(Tzones,mtd);
+    analyzer.interpolateDensityToBullutin(zones,mtd);
 
-    analyzer.interpolateDensityToBullutin(Tzones,mts);
+    analyzer.interpolateDensityToBullutin(zones,mts);
+
+    //расчет вертикальной устойчивости
+    analyzer.calculateTforR(zones);
 
     qDebug() << "---температура для каждой точки---";
 
@@ -304,7 +318,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     qDebug() << "---разбивка по зонам---";
 
-    for (const auto& T : Tzones)
+    for (const auto& T : zones)
     {
         qDebug("height=%.2f Tn=%.2f Hi=%.2f dTvir=%.2f Tvrn=%.2f Ttab=%.2f TTi=%.2f TTcpm=%.2f", T.height, T.Tn, T.Hi, T.dTvir, T.Tvrn, T.Ttab, T.TTi , T.TTcpm);
     }
@@ -325,9 +339,16 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     qDebug() << "Давление и плотность";
 
-    for (const auto& T : Tzones)
+    for (const auto& T : zones)
     {
         qDebug("height=%.2f Pn=%.2f Pi=%.2f PPi=%.2f Pitab=%.2f PPcpm=%.2f",T.height, T.Pn, T.Pi, T.PPi, T.Pitab, T.PPcpm);
+    }
+
+    qDebug() << "Вертикальная устойчивость по зонам";
+
+    for (const auto& T : zones)
+    {
+        qDebug("height=%.2f T=%.2f Ri=%.2f",T.height, T.T, T.Ri);
     }
 
 }
