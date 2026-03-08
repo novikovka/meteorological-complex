@@ -124,10 +124,12 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     if (!mtd.empty())
         mtd[0] = firstMtd;
 
+    /*
     // Вывод координат в интерфейс
     ui->listWidgetX->clear();
     for (const auto& c : coordinates)
         ui->listWidgetX->addItem(c.toString());
+    */
 
     //std::vector<Zone> zones;
     zones.reserve(300);
