@@ -13,23 +13,38 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
+
+    // -----------------------------
     // Вкладка "Ветер"
+    // -----------------------------
     void on_pushButtonLoad_clicked();
 
+    // -----------------------------
     // Вкладка "Температура"
+    // -----------------------------
     void on_pushButtonLoadTempLog_clicked();
     void on_pushButtonCalculateTemp_clicked();
 
+    // -----------------------------
+    // Таблица МТД
+    // -----------------------------
+    void setDataMtd(const std::vector<Mtd>& data);
+
+    // Клик по таблице МТД
+    void onTableMtdClicked(int row, int column);
+
 private:
+
     Ui::MainWindow *ui;
 
     // -----------------------------
@@ -47,8 +62,6 @@ private:
     // путь к температурному лог-файлу
     QString tempLogFilePath;
 
-    // создание уровней бюллетеня
-    //void initializeBulletinLevels();
 };
 
 #endif // MAINWINDOW_H

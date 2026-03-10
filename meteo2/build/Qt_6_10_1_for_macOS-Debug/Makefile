@@ -55,12 +55,16 @@ OBJECTS_DIR   = ./
 SOURCES       = ../../analyzer.cpp \
 		../../fileparser.cpp \
 		../../main.cpp \
-		../../mainwindow.cpp moc_mainwindow.cpp
+		../../mainwindow.cpp \
+		../../resultswindow.cpp moc_mainwindow.cpp \
+		moc_resultswindow.cpp
 OBJECTS       = analyzer.o \
 		fileparser.o \
 		main.o \
 		mainwindow.o \
-		moc_mainwindow.o
+		resultswindow.o \
+		moc_mainwindow.o \
+		moc_resultswindow.o
 DIST          = /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_pre.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/device_config.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/common/unix.conf \
@@ -309,10 +313,12 @@ DIST          = /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_pre.p
 		../../../../meteo2.pro ../../analyzer.h \
 		../../fileparser.h \
 		../../mainwindow.h \
+		../../resultswindow.h \
 		../../types.h ../../analyzer.cpp \
 		../../fileparser.cpp \
 		../../main.cpp \
-		../../mainwindow.cpp
+		../../mainwindow.cpp \
+		../../resultswindow.cpp
 QMAKE_TARGET  = meteo2
 DESTDIR       = 
 TARGET        = meteo2.app/Contents/MacOS/meteo2
@@ -333,7 +339,7 @@ include /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/mac/sdk.mk
 first: all
 ####### Build rules
 
-meteo2.app/Contents/MacOS/meteo2: ui_mainwindow.h $(OBJECTS)  
+meteo2.app/Contents/MacOS/meteo2: ui_mainwindow.h ui_resultswindow.h $(OBJECTS)  
 	@test -d meteo2.app/Contents/MacOS/ || mkdir -p meteo2.app/Contents/MacOS/
 	$(LINK) $(LFLAGS) -o $(TARGET)  $(OBJECTS) $(OBJCOMP) $(LIBS)
 
@@ -860,9 +866,9 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents ../../analyzer.h ../../fileparser.h ../../mainwindow.h ../../types.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../../analyzer.cpp ../../fileparser.cpp ../../main.cpp ../../mainwindow.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../../mainwindow.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../../analyzer.h ../../fileparser.h ../../mainwindow.h ../../resultswindow.h ../../types.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../../analyzer.cpp ../../fileparser.cpp ../../main.cpp ../../mainwindow.cpp ../../resultswindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../../mainwindow.ui ../../resultswindow.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -891,9 +897,9 @@ benchmark: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_mainwindow.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_resultswindow.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_resultswindow.cpp
 moc_mainwindow.cpp: ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
@@ -903,16 +909,26 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../mainwindow.h -o moc_mainwindow.cpp
 
+moc_resultswindow.cpp: ../../resultswindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
+	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../resultswindow.h -o moc_resultswindow.cpp
+
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_mainwindow.h
+compiler_uic_make_all: ui_mainwindow.h ui_resultswindow.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_mainwindow.h
+	-$(DEL_FILE) ui_mainwindow.h ui_resultswindow.h
 ui_mainwindow.h: ../../mainwindow.ui \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/uic
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/uic ../../mainwindow.ui -o ui_mainwindow.h
+
+ui_resultswindow.h: ../../resultswindow.ui \
+		/Users/alinanovikova/Qt/6.10.1/macos/libexec/uic
+	/Users/alinanovikova/Qt/6.10.1/macos/libexec/uic ../../resultswindow.ui -o ui_resultswindow.h
 
 compiler_rez_source_make_all:
 compiler_rez_source_clean:
@@ -977,8 +993,17 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		../../analyzer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../../mainwindow.cpp
 
+resultswindow.o: ../../resultswindow.cpp ../../resultswindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \
+		ui_resultswindow.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultswindow.o ../../resultswindow.cpp
+
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
+
+moc_resultswindow.o: moc_resultswindow.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_resultswindow.o moc_resultswindow.cpp
 
 ####### Install
 

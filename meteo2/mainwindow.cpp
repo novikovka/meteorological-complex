@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "resultswindow.h"
 #include "ui_mainwindow.h"
 
 #include <QFileDialog>
@@ -14,15 +15,102 @@
 #include <array>
 #include <map>
 
-MainWindow::MainWindow(QWidget *parent): QMainWindow(parent),ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
+    // запрещаем редактирование ячеек
+    ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // переход по клику на ячейку
+    connect(ui->TableMtd, &QTableWidget::cellClicked,
+            this, &MainWindow::onTableMtdClicked);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::onTableMtdClicked(int row, int column)
+{
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+
+    //ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex() + 1);
+    ui->stackedWidget->setCurrentIndex(2);
+}
+
+void MainWindow::setDataMtd(const std::vector<Mtd>& data)
+{
+    // Очищаем таблицу
+    ui->TableMtd->clear();
+
+    // Устанавливаем количество строк и столбцов
+    ui->TableMtd->setRowCount(data.size());
+    ui->TableMtd->setColumnCount(7);
+
+    // Устанавливаем заголовки столбцов
+    QStringList headers;
+    headers << "h" << "v" << "av" << "TTi" << "TTcpm" << "PPi" << "PPcpm";
+    ui->TableMtd->setHorizontalHeaderLabels(headers);
+
+    // Заполняем таблицу данными
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Mtd &item = data[row];
+
+        // Создаем элементы для каждой ячейки с форматированием чисел
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
+        QTableWidgetItem *ttcpmItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
+        QTableWidgetItem *ppcpmItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+
+        // Устанавливаем выравнивание по правому краю для чисел
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ttcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ppcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+
+        // Устанавливаем элементы в таблицу
+        ui->TableMtd->setItem(row, 0, hItem);
+        ui->TableMtd->setItem(row, 1, vItem);
+        ui->TableMtd->setItem(row, 2, avItem);
+        ui->TableMtd->setItem(row, 3, ttiItem);
+        ui->TableMtd->setItem(row, 4, ttcpmItem);
+        ui->TableMtd->setItem(row, 5, ppiItem);
+        ui->TableMtd->setItem(row, 6, ppcpmItem);
+    }
+
+    // Автоматически подгоняем ширину столбцов под содержимое
+    ui->TableMtd->resizeColumnsToContents();
+
+    // Добавляем возможность сортировки (опционально)
+    ui->TableMtd->setSortingEnabled(true);
+
+    // Устанавливаем политику выделения (опционально)
+    ui->TableMtd->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->TableMtd->setSelectionMode(QAbstractItemView::SingleSelection);
+
+    //запрет на редактирование содержимого таблицы
+    ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+QString fraction(QString num, QString den) //для генерации дроби
+{
+    return "<table style='display:inline-table; vertical-align:middle;'>"
+           "<tr><td style='text-align:center;'>" + num + "</td></tr>"
+                   "<tr><td style='border-top:1px solid black;'></td></tr>"
+                   "<tr><td style='text-align:center;'>" + den + "</td></tr>"
+                   "</table>";
 }
 
 void MainWindow::on_pushButtonLoad_clicked() // обработка логов для ветра
@@ -37,6 +125,8 @@ void MainWindow::on_pushButtonLoad_clicked() // обработка логов д
         return;
 
     windLogFilePath = fileName;
+
+    ui->lineEditWind->setText(windLogFilePath);
 
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
@@ -54,6 +144,8 @@ void MainWindow::on_pushButtonLoadTempLog_clicked() // обработка лог
         return;
 
     tempLogFilePath = fileName;
+
+    ui->lineEditTemp->setText(tempLogFilePath);
 
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
@@ -190,9 +282,10 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     }
 
     // Очищаем текстовое поле
-    ui->textEditTempResult->clear();
+    //ui->textEditTempResult->clear();
 
     // Выводим все записи
+    /*
     for (const auto& rec : records)
     {
         ui->textEditTempResult->append(
@@ -202,6 +295,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
                 .arg(rec.dtp)
             );
     }
+    */
 
     const std::array<double, 51> Tvir = {
         0.3, 0.3, 0.4, 0.4, 0.4,
@@ -308,7 +402,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     analyzer.interpolateDensityToBullutin(zones,mts);
 
-    //расчет вертикальной устойчивости
+    //расчет вертикальной устойчивости для зон
     analyzer.calculateTforR(zones);
 
     qDebug() << "---температура для каждой точки---";
@@ -353,6 +447,63 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         qDebug("height=%.2f T=%.2f Ri=%.2f",T.height, T.T, T.Ri);
     }
 
+    ui->stackedWidget->setCurrentIndex(1);
+    //resultswindow *results = new resultswindow(this);
+
+    //results->setDataMtd(mtd);
+    //results->setDataMts(mts);
+
+    //results->show();
+
+    setDataMtd(mtd);
+
+
+    QString html = R"(
+<p style="font-size:20px; line-height:1.5;">
+
+T<sub>ni</sub> =
+
+<span style="display:inline-flex; align-items:center; margin:0 4px;">
+  <!-- Дробь 1/n -->
+  <span style="display:flex; flex-direction:column; text-align:center; font-size:20px; line-height:1;">
+    <span>1</span>
+    <span style="border-top:2px solid black; margin:0 2px;"></span>
+    <span>n</span>
+  </span>
+
+  <!-- Пробел между дробью и суммой -->
+  <span style="width:6px;"></span>
+
+  <!-- Сумма -->
+  <span style="display:flex; flex-direction:column; align-items:center; font-size:20px;">
+    <span>&sum;</span>
+    <span style="font-size:14px;">k=1</span>
+    <span style="font-size:14px;">n</span>
+  </span>
+
+  <!-- Аргумент суммы -->
+  <span style="margin-left:4px;">(T<sub>k</sub>)</span>
+</span>
+
+</p>
+)";
+
+    ui->textBrowser->setHtml(html);
+
+    /*
+    QString html = "<p style='font-size:18px'>"
+                   "T<sub>ni</sub> = " +
+                   fraction("1", "n") +
+                   " &sum;<sub>k=1</sub><sup>n</sup>(T<sub>k</sub>)"
+                   "</p>";
+
+    ui->textBrowser->setHtml(html);
+*/
+
 }
+
+
+
+// какой фрагмент кода мне добавить в обработчик кнопки чтобы после нажатия на эту кнопку пользователю переключался на новую страницу в StackWidget?
 
 
