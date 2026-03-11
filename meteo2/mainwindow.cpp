@@ -25,8 +25,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     // переход по клику на ячейку
+
     connect(ui->TableMtd, &QTableWidget::cellClicked,
             this, &MainWindow::onTableMtdClicked);
+
 }
 
 MainWindow::~MainWindow()
@@ -34,15 +36,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
 void MainWindow::onTableMtdClicked(int row, int column)
 {
     Q_UNUSED(row);
     Q_UNUSED(column);
 
     //ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex() + 1);
-    ui->stackedWidget->setCurrentIndex(2);
+    ui->stackedWidget->setCurrentIndex(1);
 }
 
+
+/*
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
     // Очищаем таблицу
@@ -94,13 +99,65 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
     ui->TableMtd->resizeColumnsToContents();
 
     // Добавляем возможность сортировки (опционально)
-    ui->TableMtd->setSortingEnabled(true);
+    //ui->TableMtd->setSortingEnabled(true);
 
     // Устанавливаем политику выделения (опционально)
-    ui->TableMtd->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->TableMtd->setSelectionMode(QAbstractItemView::SingleSelection);
+    //ui->TableMtd->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //ui->TableMtd->setSelectionMode(QAbstractItemView::SingleSelection);
 
     //запрет на редактирование содержимого таблицы
+    ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+*/
+
+void MainWindow::setDataMtd(const std::vector<Mtd>& data)
+{
+    QSignalBlocker blocker(ui->TableMtd);  // блокируем все сигналы
+    ui->TableMtd->clear();
+    ui->TableMtd->setRowCount(data.size());
+    ui->TableMtd->setColumnCount(7);
+
+    QStringList headers;
+    headers << "h" << "v" << "av" << "TTi" << "TTcpm" << "PPi" << "PPcpm";
+    ui->TableMtd->setHorizontalHeaderLabels(headers);
+
+    // Убираем любое текущее выделение
+    ui->TableMtd->setCurrentCell(-1, -1);
+    ui->TableMtd->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Mtd &item = data[row];
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 0, hItem);
+
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 1, vItem);
+
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 2, avItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ttcpmItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
+        ttcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 4, ttcpmItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 5, ppiItem);
+
+        QTableWidgetItem *ppcpmItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+        ppcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd->setItem(row, 6, ppcpmItem);
+    }
+
+    ui->TableMtd->resizeColumnsToContents();
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
@@ -447,7 +504,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         qDebug("height=%.2f T=%.2f Ri=%.2f",T.height, T.T, T.Ri);
     }
 
-    ui->stackedWidget->setCurrentIndex(1);
+    //ui->stackedWidget->setCurrentIndex(1);
     //resultswindow *results = new resultswindow(this);
 
     //results->setDataMtd(mtd);
@@ -459,51 +516,16 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
 
     QString html = R"(
-<p style="font-size:20px; line-height:1.5;">
-
-T<sub>ni</sub> =
-
-<span style="display:inline-flex; align-items:center; margin:0 4px;">
-  <!-- Дробь 1/n -->
-  <span style="display:flex; flex-direction:column; text-align:center; font-size:20px; line-height:1;">
-    <span>1</span>
-    <span style="border-top:2px solid black; margin:0 2px;"></span>
-    <span>n</span>
-  </span>
-
-  <!-- Пробел между дробью и суммой -->
-  <span style="width:6px;"></span>
-
-  <!-- Сумма -->
-  <span style="display:flex; flex-direction:column; align-items:center; font-size:20px;">
-    <span>&sum;</span>
-    <span style="font-size:14px;">k=1</span>
-    <span style="font-size:14px;">n</span>
-  </span>
-
-  <!-- Аргумент суммы -->
-  <span style="margin-left:4px;">(T<sub>k</sub>)</span>
-</span>
-
+<p>
+Здесь формула: <img src=":/images/proba.png" width="200">
 </p>
 )";
 
     ui->textBrowser->setHtml(html);
 
-    /*
-    QString html = "<p style='font-size:18px'>"
-                   "T<sub>ni</sub> = " +
-                   fraction("1", "n") +
-                   " &sum;<sub>k=1</sub><sup>n</sup>(T<sub>k</sub>)"
-                   "</p>";
+    ui->stackedWidget->setCurrentIndex(2);
 
-    ui->textBrowser->setHtml(html);
-*/
 
 }
-
-
-
-// какой фрагмент кода мне добавить в обработчик кнопки чтобы после нажатия на эту кнопку пользователю переключался на новую страницу в StackWidget?
 
 

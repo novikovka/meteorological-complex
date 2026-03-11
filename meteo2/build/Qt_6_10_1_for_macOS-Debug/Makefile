@@ -56,13 +56,15 @@ SOURCES       = ../../analyzer.cpp \
 		../../fileparser.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
-		../../resultswindow.cpp moc_mainwindow.cpp \
+		../../resultswindow.cpp qrc_resources.cpp \
+		moc_mainwindow.cpp \
 		moc_resultswindow.cpp
 OBJECTS       = analyzer.o \
 		fileparser.o \
 		main.o \
 		mainwindow.o \
 		resultswindow.o \
+		qrc_resources.o \
 		moc_mainwindow.o \
 		moc_resultswindow.o
 DIST          = /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_pre.prf \
@@ -589,6 +591,7 @@ Makefile: ../../meteo2.pro /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-cla
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/yacc.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/lex.prf \
 		../../meteo2.pro \
+		../../resources.qrc \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Resources/QtWidgets.prl \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Resources/QtGui.prl \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Resources/QtCore.prl
@@ -839,6 +842,7 @@ Makefile: ../../meteo2.pro /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-cla
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/yacc.prf:
 /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/lex.prf:
 ../../meteo2.pro:
+../../resources.qrc:
 /Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Resources/QtWidgets.prl:
 /Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Resources/QtGui.prl:
 /Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Resources/QtCore.prl:
@@ -866,6 +870,7 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
+	$(COPY_FILE) --parents ../../resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents ../../analyzer.h ../../fileparser.h ../../mainwindow.h ../../resultswindow.h ../../types.h $(DISTDIR)/
 	$(COPY_FILE) --parents ../../analyzer.cpp ../../fileparser.cpp ../../main.cpp ../../mainwindow.cpp ../../resultswindow.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../../mainwindow.ui ../../resultswindow.ui $(DISTDIR)/
@@ -895,8 +900,14 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all:
+compiler_rcc_make_all: qrc_resources.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) qrc_resources.cpp
+qrc_resources.cpp: ../../resources.qrc \
+		/Users/alinanovikova/Qt/6.10.1/macos/libexec/rcc \
+		../../proba.png
+	/Users/alinanovikova/Qt/6.10.1/macos/libexec/rcc -name resources --no-zstd ../../resources.qrc -o qrc_resources.cpp
+
 compiler_moc_header_make_all: moc_mainwindow.cpp moc_resultswindow.cpp
 compiler_moc_header_clean:
 	-$(DEL_FILE) moc_mainwindow.cpp moc_resultswindow.cpp
@@ -912,6 +923,9 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 moc_resultswindow.cpp: ../../resultswindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \
+		../../types.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../resultswindow.h -o moc_resultswindow.cpp
 
@@ -938,7 +952,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_header_clean compiler_uic_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_header_clean compiler_uic_clean 
 
 ####### Compile
 
@@ -982,6 +996,9 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		../../types.h \
+		../../resultswindow.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \
 		ui_mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QFileDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qfiledialog.h \
@@ -996,8 +1013,14 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 resultswindow.o: ../../resultswindow.cpp ../../resultswindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \
+		../../types.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
 		ui_resultswindow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o resultswindow.o ../../resultswindow.cpp
+
+qrc_resources.o: qrc_resources.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_resources.o qrc_resources.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp

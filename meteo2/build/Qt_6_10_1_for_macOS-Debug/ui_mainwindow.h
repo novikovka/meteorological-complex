@@ -223,7 +223,7 @@ public:
         label_7->setGeometry(QRect(330, 90, 111, 16));
         textBrowser = new QTextBrowser(page_3);
         textBrowser->setObjectName("textBrowser");
-        textBrowser->setGeometry(QRect(60, 120, 601, 551));
+        textBrowser->setGeometry(QRect(60, 120, 331, 371));
         stackedWidget->addWidget(page_3);
         page_2 = new QWidget();
         page_2->setObjectName("page_2");
