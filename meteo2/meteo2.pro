@@ -10,6 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     analyzer.cpp \
+    displaymanager.cpp \
     fileparser.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -17,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
     analyzer.h \
+    displaymanager.h \
     fileparser.h \
     mainwindow.h \
     resultswindow.h \

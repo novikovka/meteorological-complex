@@ -636,6 +636,35 @@ void Analyzer::calculateTforR(std::vector<Zone>& zones){
     }
 }
 
+/*
+напиши мне код для LaTeX, который будет выводить три формулы (каждая на новой строчке):
+Xj = Dj * cos(Ej) * cos (Aj);
+Zj = Dj * cos(Ej) * sin (Aj);
+Hj = Dj * sin(Ej) + 0,6868 * 10^(-7) * (Dj * cos(Ej))^2.
+
+,где j - индекс
+
+
+Vxk = (Xk - Xk-1) / (Sk - Sk-1);
+, где k, k-1 - индексы
+
+
+
+
+*/
+
+/*
+хорошо, теперь смотри: ранее у меня вот таким фрагментом кода была реализована запись в QTextBrowser: QString html = R"(
+                       <p>
+                       Здесь формула: <img src=":/images/proba.png" width="200">
+                       </p>
+                       )";
+
+                           ui->textBrowser->setHtml(html);
+                           теперь я хочу чтобы также в QTextBrowser выводились те значение, которые я сохраняю в методе onTableMtdClicked
+*/
+
+
 
 
 

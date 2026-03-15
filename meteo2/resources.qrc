@@ -1,5 +1,13 @@
 <RCC>
     <qresource prefix="/images">
         <file>proba.png</file>
+        <file>formula1.png</file>
+        <file>formula2.png</file>
+        <file>formula3.png</file>
+        <file>formula4.png</file>
+        <file>formula5.png</file>
+        <file>formula6.png</file>
+        <file>formula7.png</file>
+        <file>formula8.png</file>
     </qresource>
 </RCC>

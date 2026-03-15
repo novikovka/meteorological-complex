@@ -10,6 +10,7 @@
 #include "fileparser.h"
 #include "analyzer.h"
 #include "types.h"
+#include "displaymanager.h"
 
 #include <vector>
 #include <array>
@@ -21,13 +22,26 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    //устанавливаем размер окна "на весь экран"
+    showMaximized();
+
     // запрещаем редактирование ячеек
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    // переход по клику на ячейку
+    //включаем отслеживание движения мыши
+    ui->TableMtd->setMouseTracking(true);
 
+    // переход по клику на ячейку TableMtd
     connect(ui->TableMtd, &QTableWidget::cellClicked,
             this, &MainWindow::onTableMtdClicked);
+
+    // переход по клику на ячейку TableMts
+    connect(ui->TableMts, &QTableWidget::cellClicked,
+            this, &MainWindow::onTableMtsClicked);
+
+    // для изменения вида курсора
+    connect(ui->TableMtd, &QTableWidget::cellEntered,
+            this, &MainWindow::onTableCellEntered);
 
 }
 
@@ -36,79 +50,122 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*
+void MainWindow::onTableCellEntered(int row, int column)
+{
+    if (column == 0)  // столбец h
+    {
+        ui->TableMtd->unsetCursor(); // обычная стрелка
+    }
+    else
+    {
+        ui->TableMtd->setCursor(Qt::PointingHandCursor); // pointer
+    }
+}
+*/
+
+void MainWindow::onTableCellEntered(int row, int column)
+{
+    QTableWidget* table = qobject_cast<QTableWidget*>(sender());
+    if (!table) return;
+
+    if (column == 0)
+        table->unsetCursor();
+    else
+        table->setCursor(Qt::PointingHandCursor);
+}
 
 void MainWindow::onTableMtdClicked(int row, int column)
 {
-    Q_UNUSED(row);
-    Q_UNUSED(column);
+    QTableWidget* table = qobject_cast<QTableWidget*>(sender()); //ссылка на таблицу
 
-    //ui->stackedWidget->setCurrentIndex(ui->stackedWidget->currentIndex() + 1);
-    ui->stackedWidget->setCurrentIndex(1);
+    if (!table)
+        return;
+
+    QTableWidgetItem* cellItem = table->item(row, column);
+    if (!cellItem)
+        return;
+
+    // создаём структуру данных
+    CellInfo cell;
+
+    cell.row = row;
+    cell.column = column;
+    cell.tableName = table->objectName();
+    cell.cellValue = cellItem->text();
+
+    QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
+
+    //cell.height = hItem->text();
+    cell.height = hItem->text().toDouble();
+
+    QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
+
+    if (headerItem)
+        cell.columnName = headerItem->text();
+    else
+        cell.columnName = QString("Column %1").arg(column);
+
+    // генерируем HTML
+    //QString html = displayManager.generateHtml(cell);
+    QString html = displayManager.generateHtml(cell, zones, mtd);
+
+    // выводим
+    ui->textBrowser->setHtml(html);
+
+    qDebug() << "Клик по таблице:" << cell.tableName
+             << "row:" << row
+             << "column:" << column;
+
+    // переход на страницу описания
+    //ui->stackedWidget->setCurrentIndex(1);
 }
 
-
-/*
-void MainWindow::setDataMtd(const std::vector<Mtd>& data)
+void MainWindow::onTableMtsClicked(int row, int column)
 {
-    // Очищаем таблицу
-    ui->TableMtd->clear();
+    QTableWidget* table = qobject_cast<QTableWidget*>(sender()); //ссылка на таблицу
 
-    // Устанавливаем количество строк и столбцов
-    ui->TableMtd->setRowCount(data.size());
-    ui->TableMtd->setColumnCount(7);
+    if (!table)
+        return;
 
-    // Устанавливаем заголовки столбцов
-    QStringList headers;
-    headers << "h" << "v" << "av" << "TTi" << "TTcpm" << "PPi" << "PPcpm";
-    ui->TableMtd->setHorizontalHeaderLabels(headers);
+    QTableWidgetItem* cellItem = table->item(row, column);
+    if (!cellItem)
+        return;
 
-    // Заполняем таблицу данными
-    for (int row = 0; row < data.size(); ++row)
-    {
-        const Mtd &item = data[row];
+    // создаём структуру данных
+    CellInfo cell;
 
-        // Создаем элементы для каждой ячейки с форматированием чисел
-        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
-        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
-        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
-        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
-        QTableWidgetItem *ttcpmItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
-        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
-        QTableWidgetItem *ppcpmItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+    cell.row = row;
+    cell.column = column;
+    cell.tableName = table->objectName();
+    cell.cellValue = cellItem->text();
 
-        // Устанавливаем выравнивание по правому краю для чисел
-        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ttcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ppcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
 
-        // Устанавливаем элементы в таблицу
-        ui->TableMtd->setItem(row, 0, hItem);
-        ui->TableMtd->setItem(row, 1, vItem);
-        ui->TableMtd->setItem(row, 2, avItem);
-        ui->TableMtd->setItem(row, 3, ttiItem);
-        ui->TableMtd->setItem(row, 4, ttcpmItem);
-        ui->TableMtd->setItem(row, 5, ppiItem);
-        ui->TableMtd->setItem(row, 6, ppcpmItem);
-    }
+    //cell.height = hItem->text();
+    cell.height = hItem->text().toDouble();
 
-    // Автоматически подгоняем ширину столбцов под содержимое
-    ui->TableMtd->resizeColumnsToContents();
+    QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
 
-    // Добавляем возможность сортировки (опционально)
-    //ui->TableMtd->setSortingEnabled(true);
+    if (headerItem)
+        cell.columnName = headerItem->text();
+    else
+        cell.columnName = QString("Column %1").arg(column);
 
-    // Устанавливаем политику выделения (опционально)
-    //ui->TableMtd->setSelectionBehavior(QAbstractItemView::SelectRows);
-    //ui->TableMtd->setSelectionMode(QAbstractItemView::SingleSelection);
+    // генерируем HTML
+    //QString html = displayManager.generateHtml(cell);
+    QString html = displayManager.generateHtmlMts(cell, zones, mts);
 
-    //запрет на редактирование содержимого таблицы
-    ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // выводим
+    ui->textBrowser->setHtml(html);
+
+    qDebug() << "Клик по таблице:" << cell.tableName
+             << "row:" << row
+             << "column:" << column;
+
+    // переход на страницу описания
+    //ui->stackedWidget->setCurrentIndex(1);
 }
-*/
 
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
@@ -130,6 +187,8 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
         const Mtd &item = data[row];
         QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
         hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        // запрещаем выделение и редактирование
+        hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
         ui->TableMtd->setItem(row, 0, hItem);
 
         QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
@@ -161,13 +220,55 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
-QString fraction(QString num, QString den) //для генерации дроби
+void MainWindow::setDataMts(const std::vector<Mts>& data)
 {
-    return "<table style='display:inline-table; vertical-align:middle;'>"
-           "<tr><td style='text-align:center;'>" + num + "</td></tr>"
-                   "<tr><td style='border-top:1px solid black;'></td></tr>"
-                   "<tr><td style='text-align:center;'>" + den + "</td></tr>"
-                   "</table>";
+    QSignalBlocker blocker(ui->TableMts);  // блокируем все сигналы
+    ui->TableMts->clear();
+    ui->TableMts->setRowCount(data.size());
+    ui->TableMts->setColumnCount(7);
+
+    QStringList headers;
+    headers << "h" << "w" << "aw" << "TTi" << "TTcpm" << "PPi" << "PPcpm";
+    ui->TableMts->setHorizontalHeaderLabels(headers);
+
+    // Убираем любое текущее выделение
+    ui->TableMts->setCurrentCell(-1, -1);
+    ui->TableMts->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Mts &item = data[row];
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 0, hItem);
+
+        QTableWidgetItem *wItem = new QTableWidgetItem(QString::number(item.w, 'f', 2));
+        wItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 1, wItem);
+
+        QTableWidgetItem *awItem = new QTableWidgetItem(QString::number(item.aw, 'f', 2));
+        awItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 2, awItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ttcpmItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
+        ttcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 4, ttcpmItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 5, ppiItem);
+
+        QTableWidgetItem *ppcpmItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+        ppcpmItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMts->setItem(row, 6, ppcpmItem);
+    }
+
+    ui->TableMts->resizeColumnsToContents();
+    ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void MainWindow::on_pushButtonLoad_clicked() // обработка логов для ветра
@@ -205,6 +306,14 @@ void MainWindow::on_pushButtonLoadTempLog_clicked() // обработка лог
     ui->lineEditTemp->setText(tempLogFilePath);
 
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
+}
+
+void MainWindow::on_Button_go_to_start_clicked(){
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+void MainWindow::on_Button_go_to_table_clicked(){
+    ui->stackedWidget->setCurrentIndex(2);
 }
 
 void MainWindow::on_pushButtonCalculateTemp_clicked()
@@ -323,9 +432,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         return;
     }
 
-    // Создаём объект парсера
-
-
     // Вектор для хранения записей температуры
     std::vector<TemperatureRecord> records;
 
@@ -337,22 +443,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
                               "Не удалось открыть или прочитать CSV файл.");
         return;
     }
-
-    // Очищаем текстовое поле
-    //ui->textEditTempResult->clear();
-
-    // Выводим все записи
-    /*
-    for (const auto& rec : records)
-    {
-        ui->textEditTempResult->append(
-            QString("QO: %1, QT: %2, dtp: %3")
-                .arg(rec.QO)
-                .arg(rec.QT)
-                .arg(rec.dtp)
-            );
-    }
-    */
 
     const std::array<double, 51> Tvir = {
         0.3, 0.3, 0.4, 0.4, 0.4,
@@ -513,19 +603,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     //results->show();
 
     setDataMtd(mtd);
-
-
-    QString html = R"(
-<p>
-Здесь формула: <img src=":/images/proba.png" width="200">
-</p>
-)";
-
-    ui->textBrowser->setHtml(html);
+    setDataMts(mts);
 
     ui->stackedWidget->setCurrentIndex(2);
-
-
 }
-
-

@@ -16,17 +16,20 @@
   <widget class="QStackedWidget" name="stackedWidget">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>30</y>
-     <width>1361</width>
-     <height>651</height>
+     <x>10</x>
+     <y>20</y>
+     <width>1511</width>
+     <height>761</height>
     </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
    </property>
    <widget class="QWidget" name="page">
     <widget class="QTableWidget" name="tableMtd">
      <property name="geometry">
       <rect>
-       <x>30</x>
+       <x>10</x>
        <y>20</y>
        <width>581</width>
        <height>601</height>

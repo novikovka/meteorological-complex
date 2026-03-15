@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1264</width>
-    <height>744</height>
+    <width>1312</width>
+    <height>789</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="maximumSize">
    <size>
@@ -20,269 +26,327 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QStackedWidget" name="stackedWidget">
-    <property name="geometry">
-     <rect>
-      <x>-20</x>
-      <y>-10</y>
-      <width>1221</width>
-      <height>691</height>
-     </rect>
-    </property>
-    <widget class="QWidget" name="page">
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>30</y>
-        <width>621</width>
-        <height>451</height>
-       </rect>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QStackedWidget" name="stackedWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QGroupBox" name="groupBoxInput">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>150</height>
-          </size>
-         </property>
-         <property name="title">
-          <string>Прикрепите log-файлы метеокомплекса:</string>
-         </property>
-         <widget class="QWidget" name="gridLayoutWidget">
-          <property name="geometry">
-           <rect>
-            <x>9</x>
-            <y>30</y>
-            <width>601</width>
-            <height>80</height>
-           </rect>
-          </property>
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="2">
-            <widget class="QPushButton" name="pushButtonLoadTempLog">
-             <property name="text">
-              <string>загрузить файл</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButtonLoad">
-             <property name="text">
-              <string>загрузить файл </string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="labelTemp">
-             <property name="text">
-              <string>Логи температуры:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="labelWind">
-             <property name="text">
-              <string>Логи ветра:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEditWind"/>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEditTemp"/>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBoxParameters">
-         <property name="title">
-          <string>Введите начальные параметры:</string>
-         </property>
-         <widget class="QWidget" name="gridLayoutWidget_2">
-          <property name="geometry">
-           <rect>
-            <x>9</x>
-            <y>20</y>
-            <width>601</width>
-            <height>188</height>
-           </rect>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="2" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBoxC">
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>параметр R1</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBoxR1">
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBoxR2">
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>параметр R2</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>параметр А</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>параметр В</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>параметр C</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBoxB">
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QDoubleSpinBox" name="doubleSpinBoxA">
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="horizontalLayoutWidget">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>210</y>
-            <width>601</width>
-            <height>71</height>
-           </rect>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QPushButton" name="pushButtonCalculateTemp">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>50</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>300</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>выполнить расчеты</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-      </layout>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="page">
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>350</x>
+          <y>150</y>
+          <width>621</width>
+          <height>451</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QGroupBox" name="groupBoxInput">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>150</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Прикрепите log-файлы метеокомплекса:</string>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>9</x>
+              <y>30</y>
+              <width>601</width>
+              <height>80</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="1" column="2">
+              <widget class="QPushButton" name="pushButtonLoadTempLog">
+               <property name="text">
+                <string>загрузить файл</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QPushButton" name="pushButtonLoad">
+               <property name="text">
+                <string>загрузить файл </string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelTemp">
+               <property name="text">
+                <string>Логи температуры:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="labelWind">
+               <property name="text">
+                <string>Логи ветра:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="lineEditWind"/>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="lineEditTemp"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBoxParameters">
+           <property name="title">
+            <string>Введите начальные параметры:</string>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget_2">
+            <property name="geometry">
+             <rect>
+              <x>9</x>
+              <y>20</y>
+              <width>601</width>
+              <height>188</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBoxC">
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>100.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>параметр R1</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBoxR2">
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>32.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>параметр R2</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>параметр А</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>параметр В</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>параметр C</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBoxB">
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>4000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBoxA">
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBoxR1">
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>32.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="horizontalLayoutWidget">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>210</y>
+              <width>601</width>
+              <height>71</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QPushButton" name="pushButtonCalculateTemp">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>50</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>300</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>выполнить расчеты</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <widget class="QLabel" name="label_7">
+        <property name="geometry">
+         <rect>
+          <x>330</x>
+          <y>90</y>
+          <width>111</width>
+          <height>16</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Новая страница</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="Button_go_to_table">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>20</y>
+          <width>221</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Вернуться к таблице</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_2">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QPushButton" name="Button_go_to_start">
+            <property name="text">
+             <string>Вернуться к вводу данных</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QTableWidget" name="TableMtd">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>800</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="TableMts">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>800</width>
+              <height>16777215</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTextBrowser" name="textBrowser"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
-    </widget>
-    <widget class="QWidget" name="page_3">
-     <widget class="QLabel" name="label_7">
-      <property name="geometry">
-       <rect>
-        <x>330</x>
-        <y>90</y>
-        <width>111</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Новая страница</string>
-      </property>
-     </widget>
-     <widget class="QTextBrowser" name="textBrowser">
-      <property name="geometry">
-       <rect>
-        <x>60</x>
-        <y>120</y>
-        <width>331</width>
-        <height>371</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="page_2">
-     <widget class="QLabel" name="label_6">
-      <property name="geometry">
-       <rect>
-        <x>550</x>
-        <y>10</y>
-        <width>161</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Новая страница</string>
-      </property>
-     </widget>
-     <widget class="QTableWidget" name="TableMtd">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>50</y>
-        <width>541</width>
-        <height>621</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QTableWidget" name="TableMts">
-      <property name="geometry">
-       <rect>
-        <x>600</x>
-        <y>50</y>
-        <width>551</width>
-        <height>621</height>
-       </rect>
-      </property>
-     </widget>
-    </widget>
-   </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action">

@@ -20,13 +20,23 @@ constexpr double EPS = 1e-9;
 constexpr double g = 9.8065;
 constexpr double Ga = 0.0098;
 
+struct CellInfo
+{
+    QString tableName;
+    QString columnName;
+    QString cellValue;
 
+    double height;
+
+    int row;
+    int column;
+};
 
 struct Coordinate { // посчитанные логи ветра
-    double X{};
-    double Z{};
-    double H{};
-    double S{};
+    double X{}; // координата
+    double Z{}; // координата
+    double H{}; // высота
+    double S{}; // время
 
     QString toString() const {
         return QString("X=%1 Z=%2 H=%3 S=%4")
