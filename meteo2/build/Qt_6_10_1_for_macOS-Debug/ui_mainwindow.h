@@ -35,6 +35,7 @@ class Ui_MainWindow
 public:
     QAction *action;
     QWidget *centralwidget;
+    QVBoxLayout *verticalLayout_2;
     QStackedWidget *stackedWidget;
     QWidget *page;
     QWidget *verticalLayoutWidget;
@@ -53,7 +54,6 @@ public:
     QGridLayout *gridLayout_2;
     QDoubleSpinBox *doubleSpinBoxC;
     QLabel *label_4;
-    QDoubleSpinBox *doubleSpinBoxR1;
     QDoubleSpinBox *doubleSpinBoxR2;
     QLabel *label_5;
     QLabel *label;
@@ -61,36 +61,54 @@ public:
     QLabel *label_3;
     QDoubleSpinBox *doubleSpinBoxB;
     QDoubleSpinBox *doubleSpinBoxA;
+    QDoubleSpinBox *doubleSpinBoxR1;
     QWidget *horizontalLayoutWidget;
     QHBoxLayout *horizontalLayout;
     QPushButton *pushButtonCalculateTemp;
     QWidget *page_3;
     QLabel *label_7;
-    QTextBrowser *textBrowser;
+    QPushButton *Button_go_to_table;
     QWidget *page_2;
+    QVBoxLayout *verticalLayout_3;
+    QHBoxLayout *horizontalLayout_3;
+    QPushButton *Button_go_to_start;
     QLabel *label_6;
+    QHBoxLayout *horizontalLayout_2;
     QTableWidget *TableMtd;
     QTableWidget *TableMts;
+    QTextBrowser *textBrowser;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(1264, 744);
+        MainWindow->resize(1312, 789);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
+        MainWindow->setSizePolicy(sizePolicy);
         MainWindow->setMaximumSize(QSize(16777215, 1000));
         action = new QAction(MainWindow);
         action->setObjectName("action");
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
+        verticalLayout_2 = new QVBoxLayout(centralwidget);
+        verticalLayout_2->setObjectName("verticalLayout_2");
         stackedWidget = new QStackedWidget(centralwidget);
         stackedWidget->setObjectName("stackedWidget");
-        stackedWidget->setGeometry(QRect(-20, -10, 1221, 691));
+        QSizePolicy sizePolicy1(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
+        sizePolicy1.setHorizontalStretch(1);
+        sizePolicy1.setVerticalStretch(1);
+        sizePolicy1.setHeightForWidth(stackedWidget->sizePolicy().hasHeightForWidth());
+        stackedWidget->setSizePolicy(sizePolicy1);
+        stackedWidget->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
         page = new QWidget();
         page->setObjectName("page");
         verticalLayoutWidget = new QWidget(page);
         verticalLayoutWidget->setObjectName("verticalLayoutWidget");
-        verticalLayoutWidget->setGeometry(QRect(30, 30, 621, 451));
+        verticalLayoutWidget->setGeometry(QRect(350, 150, 621, 451));
         verticalLayout = new QVBoxLayout(verticalLayoutWidget);
         verticalLayout->setObjectName("verticalLayout");
         verticalLayout->setContentsMargins(0, 0, 0, 0);
@@ -147,6 +165,7 @@ public:
         doubleSpinBoxC = new QDoubleSpinBox(gridLayoutWidget_2);
         doubleSpinBoxC->setObjectName("doubleSpinBoxC");
         doubleSpinBoxC->setMaximum(100000.000000000000000);
+        doubleSpinBoxC->setValue(100.000000000000000);
 
         gridLayout_2->addWidget(doubleSpinBoxC, 2, 1, 1, 1);
 
@@ -155,15 +174,10 @@ public:
 
         gridLayout_2->addWidget(label_4, 3, 0, 1, 1);
 
-        doubleSpinBoxR1 = new QDoubleSpinBox(gridLayoutWidget_2);
-        doubleSpinBoxR1->setObjectName("doubleSpinBoxR1");
-        doubleSpinBoxR1->setMaximum(100000.000000000000000);
-
-        gridLayout_2->addWidget(doubleSpinBoxR1, 3, 1, 1, 1);
-
         doubleSpinBoxR2 = new QDoubleSpinBox(gridLayoutWidget_2);
         doubleSpinBoxR2->setObjectName("doubleSpinBoxR2");
         doubleSpinBoxR2->setMaximum(100000.000000000000000);
+        doubleSpinBoxR2->setValue(32.000000000000000);
 
         gridLayout_2->addWidget(doubleSpinBoxR2, 4, 1, 1, 1);
 
@@ -190,14 +204,23 @@ public:
         doubleSpinBoxB = new QDoubleSpinBox(gridLayoutWidget_2);
         doubleSpinBoxB->setObjectName("doubleSpinBoxB");
         doubleSpinBoxB->setMaximum(100000.000000000000000);
+        doubleSpinBoxB->setValue(4000.000000000000000);
 
         gridLayout_2->addWidget(doubleSpinBoxB, 1, 1, 1, 1);
 
         doubleSpinBoxA = new QDoubleSpinBox(gridLayoutWidget_2);
         doubleSpinBoxA->setObjectName("doubleSpinBoxA");
         doubleSpinBoxA->setMaximum(100000.000000000000000);
+        doubleSpinBoxA->setValue(1.000000000000000);
 
         gridLayout_2->addWidget(doubleSpinBoxA, 0, 1, 1, 1);
+
+        doubleSpinBoxR1 = new QDoubleSpinBox(gridLayoutWidget_2);
+        doubleSpinBoxR1->setObjectName("doubleSpinBoxR1");
+        doubleSpinBoxR1->setMaximum(100000.000000000000000);
+        doubleSpinBoxR1->setValue(32.000000000000000);
+
+        gridLayout_2->addWidget(doubleSpinBoxR1, 3, 1, 1, 1);
 
         horizontalLayoutWidget = new QWidget(groupBoxParameters);
         horizontalLayoutWidget->setObjectName("horizontalLayoutWidget");
@@ -218,31 +241,78 @@ public:
         stackedWidget->addWidget(page);
         page_3 = new QWidget();
         page_3->setObjectName("page_3");
+        sizePolicy1.setHeightForWidth(page_3->sizePolicy().hasHeightForWidth());
+        page_3->setSizePolicy(sizePolicy1);
         label_7 = new QLabel(page_3);
         label_7->setObjectName("label_7");
         label_7->setGeometry(QRect(330, 90, 111, 16));
-        textBrowser = new QTextBrowser(page_3);
-        textBrowser->setObjectName("textBrowser");
-        textBrowser->setGeometry(QRect(60, 120, 331, 371));
+        Button_go_to_table = new QPushButton(page_3);
+        Button_go_to_table->setObjectName("Button_go_to_table");
+        Button_go_to_table->setGeometry(QRect(80, 20, 221, 41));
         stackedWidget->addWidget(page_3);
         page_2 = new QWidget();
         page_2->setObjectName("page_2");
+        verticalLayout_3 = new QVBoxLayout(page_2);
+        verticalLayout_3->setObjectName("verticalLayout_3");
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setObjectName("horizontalLayout_3");
+        Button_go_to_start = new QPushButton(page_2);
+        Button_go_to_start->setObjectName("Button_go_to_start");
+
+        horizontalLayout_3->addWidget(Button_go_to_start);
+
         label_6 = new QLabel(page_2);
         label_6->setObjectName("label_6");
-        label_6->setGeometry(QRect(550, 10, 161, 16));
+
+        horizontalLayout_3->addWidget(label_6);
+
+
+        verticalLayout_3->addLayout(horizontalLayout_3);
+
+        horizontalLayout_2 = new QHBoxLayout();
+        horizontalLayout_2->setObjectName("horizontalLayout_2");
         TableMtd = new QTableWidget(page_2);
         TableMtd->setObjectName("TableMtd");
-        TableMtd->setGeometry(QRect(40, 50, 541, 621));
+        QSizePolicy sizePolicy2(QSizePolicy::Policy::Maximum, QSizePolicy::Policy::Expanding);
+        sizePolicy2.setHorizontalStretch(0);
+        sizePolicy2.setVerticalStretch(0);
+        sizePolicy2.setHeightForWidth(TableMtd->sizePolicy().hasHeightForWidth());
+        TableMtd->setSizePolicy(sizePolicy2);
+        TableMtd->setMaximumSize(QSize(16777215, 16777215));
+        TableMtd->horizontalHeader()->setStretchLastSection(false);
+
+        horizontalLayout_2->addWidget(TableMtd);
+
         TableMts = new QTableWidget(page_2);
         TableMts->setObjectName("TableMts");
-        TableMts->setGeometry(QRect(600, 50, 551, 621));
+        sizePolicy2.setHeightForWidth(TableMts->sizePolicy().hasHeightForWidth());
+        TableMts->setSizePolicy(sizePolicy2);
+        TableMts->setMaximumSize(QSize(16777215, 16777215));
+
+        horizontalLayout_2->addWidget(TableMts);
+
+        textBrowser = new QTextBrowser(page_2);
+        textBrowser->setObjectName("textBrowser");
+
+        horizontalLayout_2->addWidget(textBrowser);
+
+        horizontalLayout_2->setStretch(2, 1);
+
+        verticalLayout_3->addLayout(horizontalLayout_2);
+
         stackedWidget->addWidget(page_2);
+
+        verticalLayout_2->addWidget(stackedWidget);
+
         MainWindow->setCentralWidget(centralwidget);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName("statusbar");
         MainWindow->setStatusBar(statusbar);
 
         retranslateUi(MainWindow);
+
+        stackedWidget->setCurrentIndex(0);
+
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -264,7 +334,9 @@ public:
         label_3->setText(QCoreApplication::translate("MainWindow", "\320\277\320\260\321\200\320\260\320\274\320\265\321\202\321\200 C", nullptr));
         pushButtonCalculateTemp->setText(QCoreApplication::translate("MainWindow", "\320\262\321\213\320\277\320\276\320\273\320\275\320\270\321\202\321\214 \321\200\320\260\321\201\321\207\320\265\321\202\321\213", nullptr));
         label_7->setText(QCoreApplication::translate("MainWindow", "\320\235\320\276\320\262\320\260\321\217 \321\201\321\202\321\200\320\260\320\275\320\270\321\206\320\260", nullptr));
-        label_6->setText(QCoreApplication::translate("MainWindow", "\320\235\320\276\320\262\320\260\321\217 \321\201\321\202\321\200\320\260\320\275\320\270\321\206\320\260", nullptr));
+        Button_go_to_table->setText(QCoreApplication::translate("MainWindow", "\320\222\320\265\321\200\320\275\321\203\321\202\321\214\321\201\321\217 \320\272 \321\202\320\260\320\261\320\273\320\270\321\206\320\265", nullptr));
+        Button_go_to_start->setText(QCoreApplication::translate("MainWindow", "\320\222\320\265\321\200\320\275\321\203\321\202\321\214\321\201\321\217 \320\272 \320\262\320\262\320\276\320\264\321\203 \320\264\320\260\320\275\320\275\321\213\321\205", nullptr));
+        label_6->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
     } // retranslateUi
 
 };

@@ -39,33 +39,62 @@ template <> constexpr inline auto MainWindow::qt_create_metaobjectdata<qt_meta_t
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "MainWindow",
-        "on_pushButtonLoad_clicked",
+        "tableCellClicked",
         "",
+        "TableClickInfo",
+        "info",
+        "on_pushButtonLoad_clicked",
         "on_pushButtonLoadTempLog_clicked",
         "on_pushButtonCalculateTemp_clicked",
         "setDataMtd",
         "std::vector<Mtd>",
         "data",
+        "setDataMts",
+        "std::vector<Mts>",
         "onTableMtdClicked",
         "row",
-        "column"
+        "column",
+        "onTableMtsClicked",
+        "onTableCellEntered",
+        "on_Button_go_to_start_clicked",
+        "on_Button_go_to_table_clicked"
     };
 
     QtMocHelpers::UintData qt_methods {
+        // Signal 'tableCellClicked'
+        QtMocHelpers::SignalData<void(const TableClickInfo &)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { 0x80000000 | 3, 4 },
+        }}),
         // Slot 'on_pushButtonLoad_clicked'
-        QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'on_pushButtonLoadTempLog_clicked'
-        QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(6, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'on_pushButtonCalculateTemp_clicked'
-        QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(7, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'setDataMtd'
-        QtMocHelpers::SlotData<void(const std::vector<Mtd> &)>(5, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 6, 7 },
+        QtMocHelpers::SlotData<void(const std::vector<Mtd> &)>(8, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 9, 10 },
+        }}),
+        // Slot 'setDataMts'
+        QtMocHelpers::SlotData<void(const std::vector<Mts> &)>(11, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 12, 10 },
         }}),
         // Slot 'onTableMtdClicked'
-        QtMocHelpers::SlotData<void(int, int)>(8, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { QMetaType::Int, 9 }, { QMetaType::Int, 10 },
+        QtMocHelpers::SlotData<void(int, int)>(13, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 14 }, { QMetaType::Int, 15 },
         }}),
+        // Slot 'onTableMtsClicked'
+        QtMocHelpers::SlotData<void(int, int)>(16, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 14 }, { QMetaType::Int, 15 },
+        }}),
+        // Slot 'onTableCellEntered'
+        QtMocHelpers::SlotData<void(int, int)>(17, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { QMetaType::Int, 14 }, { QMetaType::Int, 15 },
+        }}),
+        // Slot 'on_Button_go_to_start_clicked'
+        QtMocHelpers::SlotData<void()>(18, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'on_Button_go_to_table_clicked'
+        QtMocHelpers::SlotData<void()>(19, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -89,13 +118,23 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     auto *_t = static_cast<MainWindow *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->on_pushButtonLoad_clicked(); break;
-        case 1: _t->on_pushButtonLoadTempLog_clicked(); break;
-        case 2: _t->on_pushButtonCalculateTemp_clicked(); break;
-        case 3: _t->setDataMtd((*reinterpret_cast<std::add_pointer_t<std::vector<Mtd>>>(_a[1]))); break;
-        case 4: _t->onTableMtdClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 0: _t->tableCellClicked((*reinterpret_cast<std::add_pointer_t<TableClickInfo>>(_a[1]))); break;
+        case 1: _t->on_pushButtonLoad_clicked(); break;
+        case 2: _t->on_pushButtonLoadTempLog_clicked(); break;
+        case 3: _t->on_pushButtonCalculateTemp_clicked(); break;
+        case 4: _t->setDataMtd((*reinterpret_cast<std::add_pointer_t<std::vector<Mtd>>>(_a[1]))); break;
+        case 5: _t->setDataMts((*reinterpret_cast<std::add_pointer_t<std::vector<Mts>>>(_a[1]))); break;
+        case 6: _t->onTableMtdClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 7: _t->onTableMtsClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 8: _t->onTableCellEntered((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        case 9: _t->on_Button_go_to_start_clicked(); break;
+        case 10: _t->on_Button_go_to_table_clicked(); break;
         default: ;
         }
+    }
+    if (_c == QMetaObject::IndexOfMethod) {
+        if (QtMocHelpers::indexOfMethod<void (MainWindow::*)(const TableClickInfo & )>(_a, &MainWindow::tableCellClicked, 0))
+            return;
     }
 }
 
@@ -118,15 +157,21 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 11;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 11)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 5;
+        _id -= 11;
     }
     return _id;
+}
+
+// SIGNAL 0
+void MainWindow::tableCellClicked(const TableClickInfo & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
 }
 QT_WARNING_POP

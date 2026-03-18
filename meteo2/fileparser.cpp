@@ -42,10 +42,10 @@ void FileParser::parseFirstLine(const QStringList& values,Zone& firstZone,Mtd& f
     if (values.size() < 6)
         return;
 
-    double dglob = values[0].toDouble();
-    double aglob = values[1].toDouble();
-    double eglob = values[2].toDouble();
-    double tglob = values[3].toDouble();
+    double dglob = values[0].toDouble(); //дальность
+    double aglob = values[1].toDouble(); //азимут
+    double eglob = values[2].toDouble(); //угол места
+    double tglob = values[3].toDouble(); //время
     double avi   = values[4].toDouble();
     double vi    = values[5].toDouble();
 
@@ -72,10 +72,10 @@ void FileParser::parseDataLine(const QStringList& values,std::vector<Coordinate>
     if (values.size() < 4)
         return;
 
-    double dglob = values[0].toDouble();
-    double aglob = values[1].toDouble();
-    double eglob = values[2].toDouble();
-    double tglob = values[3].toDouble();
+    double dglob = values[0].toDouble(); //дальность
+    double aglob = values[1].toDouble(); //азимут
+    double eglob = values[2].toDouble(); //угол места
+    double tglob = values[3].toDouble(); //время
 
     double cosE = cos(eglob * KDU);
     double sinE = sin(eglob * KDU);
@@ -88,47 +88,12 @@ void FileParser::parseDataLine(const QStringList& values,std::vector<Coordinate>
     coord.H = dglob * sinE + 0.6868e-7 * pow(dglob * cosE, 2);
     coord.S = tglob;
 
+    coord.dglob = dglob;
+    coord.aglob = aglob;
+    coord.eglob = eglob;
+
     coordinates.push_back(coord);
 }
-
-/*
-bool FileParser::parseTemperatureCSV(const QString& fileName,std::vector<TemperatureRecord>& records)
-{
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
-
-    QTextStream in(&file);
-
-    while (!in.atEnd())
-    {
-        QString line = in.readLine().trimmed();
-
-        if (line.isEmpty())
-            continue;
-
-        QStringList values = line.split(',');
-
-        if (values.size() < 3)
-            continue;
-
-        TemperatureRecord record;
-        record.QO  = values[0].toDouble();
-        record.QT  = values[1].toDouble();
-        record.dtp = values[2].toDouble();
-
-        //double Yt = QO / QT;
-        //double Rt = (globalParam.R1 / Yt) - globalParam.R2;
-        //double
-
-        records.push_back(record);
-    }
-
-    file.close();
-    return true;
-}
-*/
 
 bool FileParser::parseTemperatureCSV(const QString& fileName,
                                      std::vector<TemperatureRecord>& records)
@@ -147,7 +112,6 @@ bool FileParser::parseTemperatureCSV(const QString& fileName,
     {
         QString line = in.readLine().trimmed();
 
-        // если строка пустая
         if (line.isEmpty())
         {
             // увеличиваем индекс только один раз на блок
@@ -168,7 +132,7 @@ bool FileParser::parseTemperatureCSV(const QString& fileName,
 
         TemperatureRecord record;
 
-        record.index = currentIndex;   // ← вот главное
+        record.index = currentIndex;
         record.QO    = values[0].toDouble();
         record.QT    = values[1].toDouble();
         record.dtp   = values[2].toDouble();

@@ -183,6 +183,10 @@ private:
     std::vector<Zone> zones;
     std::vector<Mtd> mtd;
     std::vector<Mts> mts;
+    std::vector<TemperatureRecord> records;
+
+    //константы, которые пользователь вводит при загрузке логов
+    UserConstants globalParam;
 
     // путь к ветренному лог-файлу
     QString windLogFilePath;

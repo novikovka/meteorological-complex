@@ -53,6 +53,7 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../../analyzer.cpp \
+		../../displaymanager.cpp \
 		../../fileparser.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
@@ -60,6 +61,7 @@ SOURCES       = ../../analyzer.cpp \
 		moc_mainwindow.cpp \
 		moc_resultswindow.cpp
 OBJECTS       = analyzer.o \
+		displaymanager.o \
 		fileparser.o \
 		main.o \
 		mainwindow.o \
@@ -313,10 +315,12 @@ DIST          = /Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/spec_pre.p
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/yacc.prf \
 		/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/features/lex.prf \
 		../../../../meteo2.pro ../../analyzer.h \
+		../../displaymanager.h \
 		../../fileparser.h \
 		../../mainwindow.h \
 		../../resultswindow.h \
 		../../types.h ../../analyzer.cpp \
+		../../displaymanager.cpp \
 		../../fileparser.cpp \
 		../../main.cpp \
 		../../mainwindow.cpp \
@@ -871,8 +875,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../resources.qrc $(DISTDIR)/
-	$(COPY_FILE) --parents ../../analyzer.h ../../fileparser.h ../../mainwindow.h ../../resultswindow.h ../../types.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../../analyzer.cpp ../../fileparser.cpp ../../main.cpp ../../mainwindow.cpp ../../resultswindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../../analyzer.h ../../displaymanager.h ../../fileparser.h ../../mainwindow.h ../../resultswindow.h ../../types.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../../analyzer.cpp ../../displaymanager.cpp ../../fileparser.cpp ../../main.cpp ../../mainwindow.cpp ../../resultswindow.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../../mainwindow.ui ../../resultswindow.ui $(DISTDIR)/
 
 
@@ -905,7 +909,15 @@ compiler_rcc_clean:
 	-$(DEL_FILE) qrc_resources.cpp
 qrc_resources.cpp: ../../resources.qrc \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/rcc \
-		../../proba.png
+		../../formula1.png \
+		../../formula4.png \
+		../../formula8.png \
+		../../formula3.png \
+		../../formula5.png \
+		../../proba.png \
+		../../formula6.png \
+		../../formula7.png \
+		../../formula2.png
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/rcc -name resources --no-zstd ../../resources.qrc -o qrc_resources.cpp
 
 compiler_moc_header_make_all: moc_mainwindow.cpp moc_resultswindow.cpp
@@ -916,7 +928,10 @@ moc_mainwindow.cpp: ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDateTime \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdatetime.h \
 		../../types.h \
+		../../displaymanager.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc
 	/Users/alinanovikova/Qt/6.10.1/macos/libexec/moc $(DEFINES) -D__APPLE__ -D__GNUC__=4 -D__APPLE_CC__ -D__cplusplus=201402L -D__APPLE_CC__=6000 -D__clang__ -D__clang_major__=17 -D__clang_minor__=0 -D__clang_patchlevel__=0 -D__GNUC__=4 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -I/Users/alinanovikova/Qt/6.10.1/macos/mkspecs/macx-clang -I/Users/alinanovikova/Documents/Qt-Projects/meteo2 -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtGui.framework/Headers -I/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers -I. -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1 -I/Library/Developer/CommandLineTools/usr/lib/clang/17/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include -I/Library/Developer/CommandLineTools/usr/include -F/Users/alinanovikova/Qt/6.10.1/macos/lib ../../mainwindow.h -o moc_mainwindow.cpp
 
@@ -966,6 +981,12 @@ analyzer.o: ../../analyzer.cpp ../../analyzer.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdebug.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o analyzer.o ../../analyzer.cpp
 
+displaymanager.o: ../../displaymanager.cpp ../../displaymanager.h \
+		../../types.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o displaymanager.o ../../displaymanager.cpp
+
 fileparser.o: ../../fileparser.cpp ../../fileparser.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
@@ -985,7 +1006,10 @@ main.o: ../../main.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDateTime \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdatetime.h \
 		../../types.h \
+		../../displaymanager.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../../main.cpp
@@ -995,7 +1019,10 @@ mainwindow.o: ../../mainwindow.cpp ../../mainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qmainwindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QString \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qstring.h \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/QDateTime \
+		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtCore.framework/Headers/qdatetime.h \
 		../../types.h \
+		../../displaymanager.h \
 		../../resultswindow.h \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/QDialog \
 		/Users/alinanovikova/Qt/6.10.1/macos/lib/QtWidgets.framework/Headers/qdialog.h \

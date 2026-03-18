@@ -106,9 +106,13 @@ void MainWindow::onTableMtdClicked(int row, int column)
     else
         cell.columnName = QString("Column %1").arg(column);
 
-    // генерируем HTML
-    //QString html = displayManager.generateHtml(cell);
-    QString html = displayManager.generateHtml(cell, zones, mtd);
+    QString html;
+
+    if(cell.columnName == "v"){
+        html = displayManager.HtmlMtdV(cell, zones, mtd, coordinates);
+    }else if(cell.columnName == "av"){
+        html = displayManager.HtmlMtdAV(cell, zones, mtd, coordinates);
+    }
 
     // выводим
     ui->textBrowser->setHtml(html);
@@ -117,8 +121,6 @@ void MainWindow::onTableMtdClicked(int row, int column)
              << "row:" << row
              << "column:" << column;
 
-    // переход на страницу описания
-    //ui->stackedWidget->setCurrentIndex(1);
 }
 
 void MainWindow::onTableMtsClicked(int row, int column)
@@ -142,7 +144,6 @@ void MainWindow::onTableMtsClicked(int row, int column)
 
     QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
 
-    //cell.height = hItem->text();
     cell.height = hItem->text().toDouble();
 
     QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
@@ -152,9 +153,16 @@ void MainWindow::onTableMtsClicked(int row, int column)
     else
         cell.columnName = QString("Column %1").arg(column);
 
-    // генерируем HTML
-    //QString html = displayManager.generateHtml(cell);
-    QString html = displayManager.generateHtmlMts(cell, zones, mts);
+    //QString html = displayManager.generateHtmlMts(cell, zones, mts);
+
+    QString html;
+
+    if(cell.columnName == "w"){
+        html = displayManager.HtmlMtsV(cell, zones, mts, coordinates);
+    }else if(cell.columnName == "aw"){
+        html = displayManager.HtmlMtsAV(cell, zones, mts, coordinates);
+    }
+
 
     // выводим
     ui->textBrowser->setHtml(html);
@@ -163,13 +171,13 @@ void MainWindow::onTableMtsClicked(int row, int column)
              << "row:" << row
              << "column:" << column;
 
-    // переход на страницу описания
-    //ui->stackedWidget->setCurrentIndex(1);
 }
+
 
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
-    QSignalBlocker blocker(ui->TableMtd);  // блокируем все сигналы
+    QSignalBlocker blocker(ui->TableMtd);
+
     ui->TableMtd->clear();
     ui->TableMtd->setRowCount(data.size());
     ui->TableMtd->setColumnCount(7);
@@ -178,16 +186,15 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
     headers << "h" << "v" << "av" << "TTi" << "TTcpm" << "PPi" << "PPcpm";
     ui->TableMtd->setHorizontalHeaderLabels(headers);
 
-    // Убираем любое текущее выделение
     ui->TableMtd->setCurrentCell(-1, -1);
     ui->TableMtd->clearSelection();
 
     for (int row = 0; row < data.size(); ++row)
     {
         const Mtd &item = data[row];
+
         QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
         hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        // запрещаем выделение и редактирование
         hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
         ui->TableMtd->setItem(row, 0, hItem);
 
@@ -216,7 +223,22 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
         ui->TableMtd->setItem(row, 6, ppcpmItem);
     }
 
+    // подгоняем колонки под содержимое
     ui->TableMtd->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    ui->TableMtd->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+    int width = ui->TableMtd->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtd->columnCount(); ++i)
+        width += ui->TableMtd->columnWidth(i);
+
+    // добавляем ширину рамки
+    width += ui->TableMtd->frameWidth() * 2;
+
+    ui->TableMtd->setFixedWidth(width);
+
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
@@ -267,7 +289,26 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
         ui->TableMts->setItem(row, 6, ppcpmItem);
     }
 
+    //ui->TableMts->resizeColumnsToContents();
+    //ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //ui->TableMtd->resizeColumnsToContents();
+    //ui->TableMts->resizeColumnsToContents();
+    // подгоняем колонки под содержимое
     ui->TableMts->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    ui->TableMts->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+    int width = ui->TableMts->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMts->columnCount(); ++i)
+        width += ui->TableMts->columnWidth(i);
+
+    // добавляем ширину рамки
+    width += ui->TableMts->frameWidth() * 2;
+
+    ui->TableMts->setFixedWidth(width);
+
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
@@ -353,7 +394,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         mts.emplace_back(h);
 
     Analyzer analyzer;
-    UserConstants globalParam;
+    //UserConstants globalParam;
     FileParser parser;
 
 
@@ -396,7 +437,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     analyzer.createZones(zones, coordinates);
 
-
     analyzer.calculateVk(zones);
     analyzer.calculateVi(zones, mtd);
     analyzer.calculateV(mtd);
@@ -433,7 +473,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     }
 
     // Вектор для хранения записей температуры
-    std::vector<TemperatureRecord> records;
+    //std::vector<TemperatureRecord> records;
 
     // Пытаемся распарсить CSV
     if (!parser.parseTemperatureCSV(tempLogFilePath, records))
@@ -593,14 +633,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     {
         qDebug("height=%.2f T=%.2f Ri=%.2f",T.height, T.T, T.Ri);
     }
-
-    //ui->stackedWidget->setCurrentIndex(1);
-    //resultswindow *results = new resultswindow(this);
-
-    //results->setDataMtd(mtd);
-    //results->setDataMts(mts);
-
-    //results->show();
 
     setDataMtd(mtd);
     setDataMts(mts);

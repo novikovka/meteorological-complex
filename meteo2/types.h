@@ -38,12 +38,19 @@ struct Coordinate { // посчитанные логи ветра
     double H{}; // высота
     double S{}; // время
 
+    double dglob{}; //дальность
+    double aglob{}; //азимут
+    double eglob{}; //угол места
+
     QString toString() const {
-        return QString("X=%1 Z=%2 H=%3 S=%4")
+        return QString("X=%1 Z=%2 H=%3 S=%4 dglob=%5 aglob=%6 eglob=%7")
         .arg(X, 0, 'f', 3)
-            .arg(Z, 0, 'f', 3)
-            .arg(H, 0, 'f', 3)
-            .arg(S, 0, 'f', 3);
+        .arg(Z, 0, 'f', 3)
+        .arg(H, 0, 'f', 3)
+        .arg(S, 0, 'f', 3)
+        .arg(dglob, 0, 'f', 3)
+        .arg(aglob, 0, 'f', 3)
+        .arg(eglob, 0, 'f', 3);
     }
 };
 
@@ -77,15 +84,6 @@ struct UserConstants { // константы для расчета темпер�
     double U0;
     double P0;
 };
-
-
-/*
-struct Tzone {
-    double height{};
-    double Hi{}; //высота середины слоя
-    double Tn{};
-};
-*/
 
 struct Zone {
     // то, что взято из первой структуры

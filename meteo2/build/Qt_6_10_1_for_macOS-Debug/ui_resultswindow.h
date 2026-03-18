@@ -35,12 +35,12 @@ public:
         resultswindow->resize(1526, 974);
         stackedWidget = new QStackedWidget(resultswindow);
         stackedWidget->setObjectName("stackedWidget");
-        stackedWidget->setGeometry(QRect(40, 30, 1361, 651));
+        stackedWidget->setGeometry(QRect(10, 20, 1511, 761));
         page = new QWidget();
         page->setObjectName("page");
         tableMtd = new QTableWidget(page);
         tableMtd->setObjectName("tableMtd");
-        tableMtd->setGeometry(QRect(30, 20, 581, 601));
+        tableMtd->setGeometry(QRect(10, 20, 581, 601));
         tableMts = new QTableWidget(page);
         tableMts->setObjectName("tableMts");
         tableMts->setGeometry(QRect(630, 20, 671, 661));
@@ -50,6 +50,9 @@ public:
         stackedWidget->addWidget(page_2);
 
         retranslateUi(resultswindow);
+
+        stackedWidget->setCurrentIndex(0);
+
 
         QMetaObject::connectSlotsByName(resultswindow);
     } // setupUi
