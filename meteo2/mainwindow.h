@@ -141,7 +141,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    // РЕКОМЕНДАЦИЯ: добавить метод для получения последней информации о клике
+    // пока что
     TableClickInfo getLastClickInfo() const { return m_lastClickInfo; }
 
 private slots:
@@ -174,10 +174,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-
-    // -----------------------------
-    // ДАННЫЕ ПРОЕКТА (состояние окна)
-    // -----------------------------
 
     std::vector<Coordinate> coordinates;
     std::vector<Zone> zones;

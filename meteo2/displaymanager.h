@@ -24,11 +24,15 @@ public:
 
 
     QString HtmlTTiMtd(const CellInfo& cell, const std::vector<Zone>& zones, const std::vector<Mtd>& mtd,
-                       const UserConstants& constants, std::vector<TemperatureRecord>& records);
+                       const UserConstants& constants);
     QString HtmlTTiMts(const CellInfo& cell, const std::vector<Zone>& zones, const std::vector<Mts>& mts,
-                       const UserConstants& constants, std::vector<TemperatureRecord>& records);
-    QString HtmlTTi(const CellInfo& cell,const std::vector<Zone>& zones,
-                                    const UserConstants& constants, std::vector<TemperatureRecord>& records);
+                       const UserConstants& constants);
+    QString HtmlTTi(const CellInfo& cell,const std::vector<Zone>& zones,const UserConstants& constants);
+    QString HtmlTTcpm(const CellInfo& cell,const std::vector<Zone>& zones,const UserConstants& constants);
+
+    QString HtmlTTcpmMtd(const CellInfo& cell,const std::vector<Zone>& zones,  const std::vector<Mtd>& mtd, const UserConstants& constants);
+    QString HtmlTTcpmMts(const CellInfo& cell,const std::vector<Zone>& zones, const std::vector<Mts>& mts, const UserConstants& constants);
+
     QString HtmlPPi(const CellInfo& cell, const std::vector<Zone>& zones);
 };
 

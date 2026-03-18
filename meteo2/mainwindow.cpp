@@ -50,20 +50,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/*
-void MainWindow::onTableCellEntered(int row, int column)
-{
-    if (column == 0)  // столбец h
-    {
-        ui->TableMtd->unsetCursor(); // обычная стрелка
-    }
-    else
-    {
-        ui->TableMtd->setCursor(Qt::PointingHandCursor); // pointer
-    }
-}
-*/
-
 void MainWindow::onTableCellEntered(int row, int column)
 {
     QTableWidget* table = qobject_cast<QTableWidget*>(sender());
@@ -112,6 +98,10 @@ void MainWindow::onTableMtdClicked(int row, int column)
         html = displayManager.HtmlMtdV(cell, zones, mtd, coordinates);
     }else if(cell.columnName == "av"){
         html = displayManager.HtmlMtdAV(cell, zones, mtd, coordinates);
+    }else if(cell.columnName == "TTi"){
+        html = displayManager.HtmlTTiMtd(cell, zones, mtd, globalParam);
+    }else if(cell.columnName == "TTcpm"){
+        html = displayManager.HtmlTTcpmMtd(cell, zones, mtd, globalParam);
     }
 
     // выводим
@@ -153,14 +143,16 @@ void MainWindow::onTableMtsClicked(int row, int column)
     else
         cell.columnName = QString("Column %1").arg(column);
 
-    //QString html = displayManager.generateHtmlMts(cell, zones, mts);
-
     QString html;
 
     if(cell.columnName == "w"){
         html = displayManager.HtmlMtsV(cell, zones, mts, coordinates);
     }else if(cell.columnName == "aw"){
         html = displayManager.HtmlMtsAV(cell, zones, mts, coordinates);
+    }else if(cell.columnName == "TTi"){
+        html = displayManager.HtmlTTiMts(cell, zones, mts, globalParam);
+    }else if(cell.columnName == "TTcpm"){
+        html = displayManager.HtmlTTcpmMts(cell, zones, mts, globalParam);
     }
 
 

@@ -10,4 +10,15 @@
         <file>formula7.png</file>
         <file>formula8.png</file>
     </qresource>
+    <qresource prefix="/TT">
+        <file>TTi(1).png</file>
+        <file>TTi(2).png</file>
+        <file>TTi(3).png</file>
+        <file>TTi(4).png</file>
+        <file>TTi(5).png</file>
+        <file>TTi(6).png</file>
+        <file>TTi(7).png</file>
+        <file>TTi(8).png</file>
+        <file>TTi(9).png</file>
+    </qresource>
 </RCC>
