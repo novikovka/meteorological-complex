@@ -13,20 +13,17 @@ SOURCES += \
     displaymanager.cpp \
     fileparser.cpp \
     main.cpp \
-    mainwindow.cpp \
-    resultswindow.cpp
+    mainwindow.cpp
 
 HEADERS += \
     analyzer.h \
     displaymanager.h \
     fileparser.h \
     mainwindow.h \
-    resultswindow.h \
     types.h
 
 FORMS += \
-    mainwindow.ui \
-    resultswindow.ui
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

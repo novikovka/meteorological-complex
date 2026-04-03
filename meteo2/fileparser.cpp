@@ -3,6 +3,7 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QtMath>
+#include "types.h"
 
 bool FileParser::parseCSV(const QString& fileName,std::vector<Coordinate>& coordinates,Zone& firstZone,Mtd& firstMtd){
     QFile file(fileName);
@@ -85,8 +86,12 @@ void FileParser::parseDataLine(const QStringList& values,std::vector<Coordinate>
     Coordinate coord;
     coord.X = dglob * cosE * cosA;
     coord.Z = dglob * cosE * sinA;
-    coord.H = dglob * sinE + 0.6868e-7 * pow(dglob * cosE, 2);
+    double H = dglob * sinE + 0.6868e-7 * pow(dglob * cosE, 2);
+    coord.H = H;
     coord.S = tglob;
+
+    // нужно переписать эту формулу?
+    coord.H_geo = ((g * m_latitude)/gc ) * ((rzem * H)/(rzem + H));
 
     coord.dglob = dglob;
     coord.aglob = aglob;

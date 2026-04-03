@@ -98,10 +98,10 @@ signals:
 
 #include <QMainWindow>
 #include <QString>
-#include <QDateTime> // Добавьте этот заголовок
+#include <QDateTime>
 #include <vector>
 
-#include "types.h"   // Coordinate, Zone, Mtd, Mts
+#include "types.h"
 #include "displaymanager.h"
 
 QT_BEGIN_NAMESPACE

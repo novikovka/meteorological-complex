@@ -19,6 +19,9 @@ constexpr double EPS = 1e-9;
 
 constexpr double g = 9.8065;
 constexpr double Ga = 0.0098;
+constexpr double rzem = 6371000L; // средний радиус земли
+constexpr double m_latitude = 56.85; // широта места (Екатеринбург), в градусах
+constexpr double gc = 9.80665; // стандартное ускорение силы тяжести
 
 struct CellInfo
 {
@@ -38,6 +41,8 @@ struct Coordinate { // посчитанные логи ветра
     double H{}; // высота
     double S{}; // время
 
+    double H_geo{}; //геопотенциальная высота
+
     double dglob{}; //дальность
     double aglob{}; //азимут
     double eglob{}; //угол места
@@ -53,6 +58,8 @@ struct Coordinate { // посчитанные логи ветра
         .arg(eglob, 0, 'f', 3);
     }
 };
+
+
 
 struct TemperatureRecord // логи температуры
 {

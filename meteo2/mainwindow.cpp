@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+
     //устанавливаем размер окна "на весь экран"
     showMaximized();
 
@@ -81,8 +82,6 @@ void MainWindow::onTableMtdClicked(int row, int column)
     cell.cellValue = cellItem->text();
 
     QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
-
-    //cell.height = hItem->text();
     cell.height = hItem->text().toDouble();
 
     QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
@@ -94,14 +93,57 @@ void MainWindow::onTableMtdClicked(int row, int column)
 
     QString html;
 
+    /*
+    Zone currentZone{};
+    for (const Zone& item : zones){
+        if (std::abs(item.height - cell.height) < 100.0){
+            currentZone = item;
+            break;
+        }
+    }
+    */
+    Zone currentZone{};
+
+    // Предполагаем, что zones отсортированы по height
+    if (!zones.empty()) {
+        // Находим первую зону с высотой >= cell.height
+        auto it = std::lower_bound(zones.begin(), zones.end(), cell.height,
+            [](const Zone& zone, double height) {
+                return zone.height < height;
+            });
+
+        if (it == zones.begin()) {
+            // Все зоны выше cell.height, берем первую
+            currentZone = zones.front();
+        }
+        else if (it == zones.end()) {
+            // Все зоны ниже cell.height, берем последнюю
+            currentZone = zones.back();
+        }
+        else {
+            // Сравниваем две соседние зоны: (it-1) и it
+            const Zone& lower = *(it - 1);
+            const Zone& upper = *it;
+
+            double diffLower = std::abs(lower.height - cell.height);
+            double diffUpper = std::abs(upper.height - cell.height);
+
+            currentZone = (diffLower <= diffUpper) ? lower : upper;
+        }
+    }
+
     if(cell.columnName == "v"){
-        html = displayManager.HtmlMtdV(cell, zones, mtd, coordinates);
+        html = displayManager.HtmlMtdV(cell, currentZone, mtd, coordinates);
     }else if(cell.columnName == "av"){
-        html = displayManager.HtmlMtdAV(cell, zones, mtd, coordinates);
+        html = displayManager.HtmlMtdAV(cell, currentZone, mtd, coordinates);
     }else if(cell.columnName == "TTi"){
         html = displayManager.HtmlTTiMtd(cell, zones, mtd, globalParam);
     }else if(cell.columnName == "TTcpm"){
         html = displayManager.HtmlTTcpmMtd(cell, zones, mtd, globalParam);
+    }else if(cell.columnName == "PPi"){
+        html = displayManager.HtmlPPiMtd(cell, zones, mtd);
+    }else if(cell.columnName == "PPcpm"){
+        html = displayManager.HtmlPPcpmMtd(cell, zones, mtd);
     }
 
     // выводим
@@ -153,8 +195,11 @@ void MainWindow::onTableMtsClicked(int row, int column)
         html = displayManager.HtmlTTiMts(cell, zones, mts, globalParam);
     }else if(cell.columnName == "TTcpm"){
         html = displayManager.HtmlTTcpmMts(cell, zones, mts, globalParam);
+    }else if(cell.columnName == "PPi"){
+        html = displayManager.HtmlPPiMts(cell, zones, mts);
+    }else if(cell.columnName == "PPcpm"){
+        html = displayManager.HtmlPPcpmMts(cell, zones, mts);
     }
-
 
     // выводим
     ui->textBrowser->setHtml(html);
@@ -281,10 +326,6 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
         ui->TableMts->setItem(row, 6, ppcpmItem);
     }
 
-    //ui->TableMts->resizeColumnsToContents();
-    //ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    //ui->TableMtd->resizeColumnsToContents();
-    //ui->TableMts->resizeColumnsToContents();
     // подгоняем колонки под содержимое
     ui->TableMts->resizeColumnsToContents();
 
@@ -300,7 +341,6 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
     width += ui->TableMts->frameWidth() * 2;
 
     ui->TableMts->setFixedWidth(width);
-
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
@@ -351,7 +391,14 @@ void MainWindow::on_Button_go_to_table_clicked(){
 
 void MainWindow::on_pushButtonCalculateTemp_clicked()
 {
-    // Можно заранее зарезервировать память
+    // Очищаем все векторы перед новым расчетом
+    coordinates.clear();
+    zones.clear();
+    mtd.clear();
+    mts.clear();
+    records.clear();  // если records является членом класса
+
+    // Или используйте reserve только после очистки
     coordinates.reserve(10000);
     zones.reserve(300);
     mtd.reserve(30);
@@ -386,9 +433,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
         mts.emplace_back(h);
 
     Analyzer analyzer;
-    //UserConstants globalParam;
     FileParser parser;
-
 
     if (!windLogFilePath.isEmpty())
     {
@@ -409,23 +454,14 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     }
 
     zones.push_back(firstZone);
-    mtd.push_back(firstMtd);
 
-    // Если нужно — обновляем первый уровень МДТ
+    // Обновляем первый уровень МДТ (вместо добавления нового)
     if (!mtd.empty())
         mtd[0] = firstMtd;
+    else
+        mtd.push_back(firstMtd);
 
-    /*
-    // Вывод координат в интерфейс
-    ui->listWidgetX->clear();
-    for (const auto& c : coordinates)
-        ui->listWidgetX->addItem(c.toString());
-    */
-
-    //std::vector<Zone> zones;
     zones.reserve(300);
-
-    //analyzer.createTzones(Tzones);
 
     analyzer.createZones(zones, coordinates);
 
@@ -440,9 +476,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     analyzer.createBullutin(mtd);
     analyzer.createBullutinMts(mts);
 
-
     // ТЕМПЕРАТУРА !!!!!!!!!!!!
-
     globalParam.A = ui->doubleSpinBoxA->value();
     globalParam.B = ui->doubleSpinBoxB->value();
     globalParam.C = ui->doubleSpinBoxC->value();
@@ -455,7 +489,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
 
     qDebug("A=%.2f B=%.2f C=%.2f R1=%.2f R2=%.2f", globalParam.A, globalParam.B, globalParam.C, globalParam.R1, globalParam.R2);
 
-
     if (tempLogFilePath.isEmpty())
     {
         QMessageBox::warning(this,
@@ -463,9 +496,6 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
                              "Сначала загрузите log-файл.");
         return;
     }
-
-    // Вектор для хранения записей температуры
-    //std::vector<TemperatureRecord> records;
 
     // Пытаемся распарсить CSV
     if (!parser.parseTemperatureCSV(tempLogFilePath, records))
@@ -560,74 +590,67 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     analyzer.calculateTTcpm(zones);
 
     // 10. Интерполяция, получаем значения для "метеодействительного"
-    analyzer.interpolateTemperatureToBullutin(zones,mtd);
-
-    analyzer.interpolateTemperatureToBullutin(zones,mts);
-
+    analyzer.interpolateTemperatureToBullutin(zones, mtd);
+    analyzer.interpolateTemperatureToBullutin(zones, mts);
 
     // Давление и плотность
-
     // 1. Расчет табличной плотности для каждой зоны
-    analyzer.fillTabDensity(DensityTable,zones);
+    analyzer.fillTabDensity(DensityTable, zones);
 
     // 2. Расчет давления в зоне
-    analyzer.calculatePn(zones,globalParam);
+    analyzer.calculatePn(zones, globalParam);
     analyzer.calculatePi(zones);
     analyzer.calculatePPi(zones);
     analyzer.calculatePPcpm(zones);
 
     // Интерполяция плотности, получаем значения для "метеодействительного"
-    analyzer.interpolateDensityToBullutin(zones,mtd);
-
-    analyzer.interpolateDensityToBullutin(zones,mts);
+    analyzer.interpolateDensityToBullutin(zones, mtd);
+    analyzer.interpolateDensityToBullutin(zones, mts);
 
     //расчет вертикальной устойчивости для зон
     analyzer.calculateTforR(zones);
 
+    // Отладочный вывод (оставьте как есть)
     qDebug() << "---температура для каждой точки---";
-
     for (const auto& r : records)
     {
         qDebug("QO=%.2f QT=%.2f dtp=%.2f dtv=%.2f Yt=%.2f Rt=%.2f T=%.2f index=%d", r.QO, r.QT, r.dtp, r.dtv, r.Yt, r.Rt, r.T, r.index);
     }
 
     qDebug() << "---разбивка по зонам---";
-
     for (const auto& T : zones)
     {
         qDebug("height=%.2f Tn=%.2f Hi=%.2f dTvir=%.2f Tvrn=%.2f Ttab=%.2f TTi=%.2f TTcpm=%.2f", T.height, T.Tn, T.Hi, T.dTvir, T.Tvrn, T.Ttab, T.TTi , T.TTcpm);
     }
 
     qDebug() << "Интерполяция: метеодействительный";
-
     for (const auto& i : mtd)
     {
         qDebug("h=%.2f TTi=%.2f TTcpm=%.2f PPi=%.2f PPcpm=%.2f", i.h, i.TTi, i.TTcpm, i.PPi, i.PPcpm);
     }
 
     qDebug() << "Интерполяция: метеосредний";
-
     for (const auto& i : mts)
     {
         qDebug("h=%.2f TTi=%.2f TTcpm=%.2f PPi=%.2f PPcpm=%.2f", i.h, i.TTi, i.TTcpm, i.PPi, i.PPcpm);
     }
 
     qDebug() << "Давление и плотность";
-
     for (const auto& T : zones)
     {
         qDebug("height=%.2f Pn=%.2f Pi=%.2f PPi=%.2f Pitab=%.2f PPcpm=%.2f",T.height, T.Pn, T.Pi, T.PPi, T.Pitab, T.PPcpm);
     }
 
     qDebug() << "Вертикальная устойчивость по зонам";
-
     for (const auto& T : zones)
     {
         qDebug("height=%.2f T=%.2f Ri=%.2f",T.height, T.T, T.Ri);
     }
 
+    // Обновляем таблицы новыми данными
     setDataMtd(mtd);
     setDataMts(mts);
 
+    // Переходим на страницу с таблицами
     ui->stackedWidget->setCurrentIndex(2);
 }

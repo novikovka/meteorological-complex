@@ -506,56 +506,6 @@ void Analyzer::calculateDeltaH(std::vector<Zone>& Zones){
     }
 }
 
-/*
-void Analyzer::interpolateTemperatureToBullutin(const std::vector<Tzone>& Tzones,std::vector<Mtd>& mtd){
-    if (Tzones.size() < 2)
-        return;
-
-    for (auto& m : mtd)
-    {
-        double h = m.h;
-
-        // Ниже минимальной высоты
-        if (h <= Tzones.front().Hi)
-        {
-            m.TTi   = Tzones.front().TTi;
-            m.TTcpm = Tzones.front().TTcpm;
-            continue;
-        }
-
-        // Выше максимальной высоты
-        if (h >= Tzones.back().Hi)
-        {
-            m.TTi   = Tzones.back().TTi;
-            m.TTcpm = Tzones.back().TTcpm;
-            continue;
-        }
-
-        // Поиск интервала
-        for (size_t i = 0; i < Tzones.size() - 1; ++i)
-        {
-            double H1 = Tzones[i].Hi;
-            double H2 = Tzones[i + 1].Hi;
-
-            if (h >= H1 && h <= H2)
-            {
-                double k = (h - H1) / (H2 - H1);
-
-                // Интерполяция TTi
-                m.TTi = Tzones[i].TTi +
-                        (Tzones[i + 1].TTi - Tzones[i].TTi) * k;
-
-                // Интерполяция TTcpm
-                m.TTcpm = Tzones[i].TTcpm +
-                          (Tzones[i + 1].TTcpm - Tzones[i].TTcpm) * k;
-
-                break;
-            }
-        }
-    }
-}
-*/
-
 // плотность
 
 // расчет давления в слое
@@ -636,39 +586,7 @@ void Analyzer::calculateTforR(std::vector<Zone>& zones){
     }
 }
 
-/*
-напиши мне код для LaTeX, который будет выводить три формулы (каждая на новой строчке):
-Xj = Dj * cos(Ej) * cos (Aj);
-Zj = Dj * cos(Ej) * sin (Aj);
-Hj = Dj * sin(Ej) + 0,6868 * 10^(-7) * (Dj * cos(Ej))^2.
-
-,где j - индекс
-
-
-Vxk = (Xk - Xk-1) / (Sk - Sk-1);
-, где k, k-1 - индексы
-
-
-
-
-*/
-
-/*
-хорошо, теперь смотри: ранее у меня вот таким фрагментом кода была реализована запись в QTextBrowser: QString html = R"(
-                       <p>
-                       Здесь формула: <img src=":/images/proba.png" width="200">
-                       </p>
-                       )";
-
-                           ui->textBrowser->setHtml(html);
-                           теперь я хочу чтобы также в QTextBrowser выводились те значение, которые я сохраняю в методе onTableMtdClicked
-*/
-
-
-
-
-
-
+// КН-04
 
 
 

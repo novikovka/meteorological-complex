@@ -9,6 +9,7 @@
         <file>formula6.png</file>
         <file>formula7.png</file>
         <file>formula8.png</file>
+        <file>icon.png</file>
     </qresource>
     <qresource prefix="/TT">
         <file>TTi(1).png</file>
@@ -20,5 +21,12 @@
         <file>TTi(7).png</file>
         <file>TTi(8).png</file>
         <file>TTi(9).png</file>
+    </qresource>
+    <qresource prefix="/P">
+        <file>P(1).png</file>
+        <file>P(2).png</file>
+        <file>P(3).png</file>
+        <file>P(4).png</file>
+        <file>P(5).png</file>
     </qresource>
 </RCC>

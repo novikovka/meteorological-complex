@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.0, 2026-03-18T11:38:55. -->
+<!-- Written by QtCreator 4.11.0, 2026-04-01T11:22:13. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -282,8 +282,8 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/user/Рабочий стол/Alina/18 марта/meteo2/meteo2.pro</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/user/Рабочий стол/Alina/18 марта/meteo2/meteo2.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/user/Рабочий стол/Alina/20 марта/meteo2/meteo2.pro</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/home/user/Рабочий стол/Alina/20 марта/meteo2/meteo2.pro</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>

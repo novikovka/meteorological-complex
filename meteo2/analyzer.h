@@ -13,8 +13,6 @@ public:
 
     void createZones(std::vector<Zone>& Zones);
 
-    //void createTzones(std::vector<Zone>& zones);
-
     void calculateVk(std::vector<Zone>& zones);
 
     void calculateVi(const std::vector<Zone>& zones,std::vector<Mtd>& mtd);
