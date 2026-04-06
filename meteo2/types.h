@@ -130,24 +130,21 @@ struct Zone {
     {}
 };
 
-/*
-struct Zone {
-    double height{};
-    double x{};
-    double z{};
-    double s{};
-    double vx{};
-    double vz{};
-    double dh{};
-    double y{};
-
-    //double Yt{};
-    //double Rt{};
-    //double T{};
-
-    Zone(double h = 0.0) : height(h) {}
+struct Bull_mtd{
+    double h{};
+    double PPi{};
+    double TTi{};
+    double v{};
+    double av{};
 };
-*/
+
+struct Bull_mts{
+    double h{};
+    double PPcpm{};
+    double TTcpm{};
+    double v{};
+    double av{};
+};
 
 struct Mtd {
     double h{};

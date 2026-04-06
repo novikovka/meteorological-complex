@@ -210,6 +210,65 @@ void MainWindow::onTableMtsClicked(int row, int column)
 
 }
 
+void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
+{
+    QSignalBlocker blocker(ui->TableMtd_1);
+
+    ui->TableMtd_1->clear();
+    ui->TableMtd_1->setRowCount(data.size());
+    ui->TableMtd_1->setColumnCount(5);
+
+    QStringList headers;
+    headers << "h" << "v" << "av" << "TTi" << "PPi";
+    ui->TableMtd_1->setHorizontalHeaderLabels(headers);
+
+    ui->TableMtd_1->setCurrentCell(-1, -1);
+    ui->TableMtd_1->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Mtd &item = data[row];
+
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
+        ui->TableMtd_1->setItem(row, 0, hItem);
+
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_1->setItem(row, 1, vItem);
+
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_1->setItem(row, 2, avItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_1->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_1->setItem(row, 4, ppiItem);
+    }
+
+    // подгоняем колонки под содержимое
+    ui->TableMtd_1->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+    int width = ui->TableMtd_1->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtd_1->columnCount(); ++i)
+        width += ui->TableMtd_1->columnWidth(i);
+
+    // добавляем ширину рамки
+    width += ui->TableMtd_1->frameWidth() * 2;
+
+    ui->TableMtd_1->setFixedWidth(width);
+
+    ui->TableMtd_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
 
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
@@ -343,6 +402,42 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
     ui->TableMts->setFixedWidth(width);
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
+
+void MainWindow::on_pushButtonLoadMtd_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Открыть бюллетень Метео",
+        "",
+        "Text files (*.txt)");
+
+    if (fileName.isEmpty())
+        return;
+
+    ui->lineEditMtd->setText(fileName);
+
+    FileParser parser;
+
+    bull_mtd.clear();
+
+    if (!parser.parseTxtFile(fileName, bull_mtd))
+    {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+
+    qDebug() << "Размер вектора:" << bull_mtd.size();
+
+    for (const auto& item : bull_mtd)
+    {
+        qDebug() << "h:" << item.h
+                 << "PPi:" << item.PPi
+                 << "TTi:" << item.TTi
+                 << "av:" << item.av
+                 << "v:" << item.v;
+    }
+}
+
 
 void MainWindow::on_pushButtonLoad_clicked() // обработка логов для ветра
 {
@@ -650,7 +745,8 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     // Обновляем таблицы новыми данными
     setDataMtd(mtd);
     setDataMts(mts);
+    setDataTableMtd(mtd);
 
     // Переходим на страницу с таблицами
-    ui->stackedWidget->setCurrentIndex(2);
+    ui->stackedWidget->setCurrentIndex(3);
 }

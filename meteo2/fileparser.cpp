@@ -5,6 +5,81 @@
 #include <QtMath>
 #include "types.h"
 
+/*
+bool FileParser::parseTxtFile(const QString& fileName,
+                              QStringList& lines,
+                              int& lineCount)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QTextStream in(&file);
+
+    lineCount = 0;
+    lines.clear();
+
+    while (!in.atEnd())
+    {
+        QString line = in.readLine();
+        lines.append(line);
+        lineCount++;
+    }
+
+    file.close();
+    return true;
+}
+*/
+
+bool FileParser::parseTxtFile(const QString& fileName,
+                              std::vector<Bull_mtd>& records)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QTextStream in(&file);
+
+    int lineIndex = 0;
+
+    while (!in.atEnd())
+    {
+        QString line = in.readLine().trimmed();
+        lineIndex++;
+
+        // пропускаем первые две строки
+        if (lineIndex <= 2)
+            continue;
+
+        // пропускаем пустые строки
+        if (line.isEmpty())
+            continue;
+
+        // проверяем минимальную длину строки
+        if (line.length() < 10)
+            continue;
+
+        // если данные отсутствуют (//////)
+        if (line.contains("//////"))
+            continue;
+
+        Bull_mtd record;
+
+        record.h   = line.mid(0,2).toDouble();
+        record.PPi = line.mid(2,2).toDouble();
+        record.TTi = line.mid(5,2).toDouble();
+        record.av  = line.mid(7,2).toDouble();
+        record.v   = line.mid(9,2).toDouble();
+
+        records.push_back(record);
+    }
+
+    file.close();
+    return true;
+}
+
 bool FileParser::parseCSV(const QString& fileName,std::vector<Coordinate>& coordinates,Zone& firstZone,Mtd& firstMtd){
     QFile file(fileName);
 

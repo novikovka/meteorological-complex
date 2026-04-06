@@ -146,6 +146,8 @@ public:
 
 private slots:
 
+    void on_pushButtonLoadMtd_clicked();
+
     // -----------------------------
     // Вкладка "Ветер"
     // -----------------------------
@@ -160,6 +162,8 @@ private slots:
     // Создание таблиц бюллетеней
     void setDataMtd(const std::vector<Mtd>& data);
     void setDataMts(const std::vector<Mts>& data);
+
+    void setDataTableMtd(const std::vector<Mtd>& data);
 
     // Клик по таблице МТД
     void onTableMtdClicked(int row, int column);
@@ -180,6 +184,7 @@ private:
     std::vector<Mtd> mtd;
     std::vector<Mts> mts;
     std::vector<TemperatureRecord> records;
+    std::vector<Bull_mtd> bull_mtd;
 
     //константы, которые пользователь вводит при загрузке логов
     UserConstants globalParam;
