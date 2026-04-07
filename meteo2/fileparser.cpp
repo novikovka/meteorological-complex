@@ -6,31 +6,105 @@
 #include "types.h"
 
 /*
-bool FileParser::parseTxtFile(const QString& fileName,
-                              QStringList& lines,
-                              int& lineCount)
+double convertHeight(int h_code)
 {
-    QFile file(fileName);
+    static const std::unordered_map<int, double> heightMap =
+        {
+            {4,   4},
+            {25,  25},
+            {75,  75},
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
+            {15,  150},
+            {30,  300},
+            {50,  500},
+            {70,  700},
+            {90,  900},
 
-    QTextStream in(&file);
+            {11, 1100},
+            {14, 1400},
+            {18, 1800},
 
-    lineCount = 0;
-    lines.clear();
+            {22, 2200},
+            {27, 2700},
 
-    while (!in.atEnd())
-    {
-        QString line = in.readLine();
-        lines.append(line);
-        lineCount++;
-    }
+            {35, 3500},
+            {45, 4500},
+            {55, 5500},
 
-    file.close();
-    return true;
+            {70, 7000},
+            {90, 9000}
+        };
+
+    auto it = heightMap.find(h_code);
+
+    if (it != heightMap.end())
+        return it->second;
+
+    return -1; // неизвестный код
 }
 */
+
+double convertHeight(int h_code)
+{
+    static bool first70 = true;
+    static bool first90 = true;
+
+    if (h_code == 70)
+    {
+        if (first70)
+        {
+            first70 = false;
+            return 700;
+        }
+        else
+        {
+            return 7000;
+        }
+    }
+
+    if (h_code == 90)
+    {
+        if (first90)
+        {
+            first90 = false;
+            return 900;
+        }
+        else
+        {
+            return 9000;
+        }
+    }
+
+    static const std::unordered_map<int, double> heightMap =
+        {
+            {4,   4},
+            {25,  25},
+            {75,  75},
+
+            {15,  150},
+            {30,  300},
+            {50,  500},
+
+            {11, 1100},
+            {14, 1400},
+            {18, 1800},
+
+            {22, 2200},
+            {27, 2700},
+
+            {35, 3500},
+            {45, 4500},
+            {55, 5500}
+        };
+
+    auto it = heightMap.find(h_code);
+
+    if (it != heightMap.end())
+        return it->second;
+
+    return -1;
+}
+
 
 bool FileParser::parseTxtFile(const QString& fileName,
                               std::vector<Bull_mtd>& records)
@@ -53,21 +127,21 @@ bool FileParser::parseTxtFile(const QString& fileName,
         if (lineIndex <= 2)
             continue;
 
-        // пропускаем пустые строки
         if (line.isEmpty())
             continue;
 
-        // проверяем минимальную длину строки
-        if (line.length() < 10)
+        if (line.length() < 11)
             continue;
 
-        // если данные отсутствуют (//////)
         if (line.contains("//////"))
             continue;
 
         Bull_mtd record;
 
-        record.h   = line.mid(0,2).toDouble();
+        int h_code = line.mid(0,2).toInt();
+
+        record.h   = convertHeight(h_code);
+
         record.PPi = line.mid(2,2).toDouble();
         record.TTi = line.mid(5,2).toDouble();
         record.av  = line.mid(7,2).toDouble();
@@ -141,7 +215,7 @@ void FileParser::parseFirstLine(const QStringList& values,Zone& firstZone,Mtd& f
     firstMtd.vx = vi * cos(direction);
     firstMtd.vz = vi * sin(direction);
     firstMtd.v  = vi;
-    firstMtd.av = avi;
+    firstMtd.av = qRound(avi / 100.0);
 }
 
 void FileParser::parseDataLine(const QStringList& values,std::vector<Coordinate>& coordinates){

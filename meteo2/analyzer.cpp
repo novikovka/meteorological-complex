@@ -1,5 +1,5 @@
 #include "analyzer.h"
-// #include "types.h"
+#include "types.h"
 
 #include <cmath>
 #include <QtMath>
@@ -201,6 +201,7 @@ void Analyzer::calculateV(std::vector<Mtd>& mtd){
         mtd[i].v = std::sqrt(pow(mtd[i].vx, 2) + pow(mtd[i].vz, 2));
 
         mtd[i].av = qRound(napr(mtd[i].vx, mtd[i].vz) * KDR);
+        mtd[i].av = qRound(mtd[i].av/ 100.0);
     }
 }
 
@@ -216,6 +217,7 @@ QString Analyzer::WindCode(int windDirection, int windSpeed)
 void Analyzer::createBullutin(std::vector<Mtd>& mtd)
 {
     for(auto x : mtd){
+        qDebug("Это тут");
         qDebug() << WindCode(x.av, qRound(x.v));
     }
 }
@@ -276,49 +278,6 @@ void Analyzer::calculateMediumHeight(std::vector<Zone>& Zones)
         Zones[i].Hi = (Zones[i - 1].height + Zones[i].height) / 2.0;
     }
 }
-
-/*
-void Analyzer::calculateDTvir(std::unordered_map<double, double> Tvir, std::vector<TemperatureRecord>& records){
-
-    for (auto& rec : records){
-        if (rec.T < -11.0){
-            rec.dtv = 0.0;
-        }else if (-11.0 <= rec.T < -5.0){
-            rec.dtv = 0.1;
-        }else if (-5.0 <= rec.T < 0){
-            rec.dtv = 0.1;
-        }else{
-            rec.dtv = Tvir[rec.T];
-        }
-    }
-}
-*/
-
-/*
-void Analyzer::calculateDTvir(const std::array<double, 51>& Tvir,std::vector<TemperatureRecord>& records){
-
-    for (auto& rec : records)
-    {
-        if (rec.T < -11.0)
-        {
-            rec.dtv = 0.0;
-        }
-        else if (rec.T < 0.0)
-        {
-            rec.dtv = 0.1;
-        }
-        else
-        {
-            int index = static_cast<int>(rec.T);
-
-            if (index >= 0 && index < Tvir.size())
-                rec.dtv = Tvir[index];
-            else
-                rec.dtv = 0.0;  // защита от выхода за границы
-        }
-    }
-}
-*/
 
 void Analyzer::addRadio(std::vector<TemperatureRecord>& records){
     for (auto& rec : records){

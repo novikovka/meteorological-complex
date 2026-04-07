@@ -163,11 +163,16 @@ private slots:
     void setDataMtd(const std::vector<Mtd>& data);
     void setDataMts(const std::vector<Mts>& data);
 
+    // новая версия: сравнение с выходными данными
     void setDataTableMtd(const std::vector<Mtd>& data);
+    void setDataTableBullMtd(const std::vector<Bull_mtd>& data);
 
     // Клик по таблице МТД
     void onTableMtdClicked(int row, int column);
     void onTableMtsClicked(int row, int column);
+
+    //сравнение и закрашивание ячеек
+    void compareVColumns();
 
     //для cursor pointer
     void onTableCellEntered(int row, int column);

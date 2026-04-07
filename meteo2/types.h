@@ -6,6 +6,7 @@
 #include <cmath>
 #include <unordered_map>
 
+//const double M_PI = 3.14159265358979323846;
 constexpr double KDU = M_PI / 3000.0;
 //constexpr double KDR = 180.0 / M_PI;
 constexpr double KDR = 3000.0 / M_PI;

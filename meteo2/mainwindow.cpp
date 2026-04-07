@@ -16,6 +16,10 @@
 #include <array>
 #include <map>
 
+
+#include <QMap>
+#include <cmath>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -43,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
     // для изменения вида курсора
     connect(ui->TableMtd, &QTableWidget::cellEntered,
             this, &MainWindow::onTableCellEntered);
+
+    //ui->lineEditMtd->setText("/Users/alinanovikova/Desktop/Бюллетень/mtd.txt");
+    //ui->lineEditWind->setText("/Users/alinanovikova/Desktop/log_1.csv");
+    //ui->lineEditTemp->setText("/Users/alinanovikova/Desktop/log_3.csv");
 
 }
 
@@ -93,24 +101,15 @@ void MainWindow::onTableMtdClicked(int row, int column)
 
     QString html;
 
-    /*
-    Zone currentZone{};
-    for (const Zone& item : zones){
-        if (std::abs(item.height - cell.height) < 100.0){
-            currentZone = item;
-            break;
-        }
-    }
-    */
     Zone currentZone{};
 
     // Предполагаем, что zones отсортированы по height
     if (!zones.empty()) {
         // Находим первую зону с высотой >= cell.height
         auto it = std::lower_bound(zones.begin(), zones.end(), cell.height,
-            [](const Zone& zone, double height) {
-                return zone.height < height;
-            });
+                                   [](const Zone& zone, double height) {
+                                       return zone.height < height;
+                                   });
 
         if (it == zones.begin()) {
             // Все зоны выше cell.height, берем первую
@@ -255,12 +254,15 @@ void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
     ui->TableMtd_1->resizeColumnsToContents();
 
     // отключаем горизонтальный скролл
-    ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    //ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // вычисляем нужную ширину таблицы
+
+
     int width = ui->TableMtd_1->verticalHeader()->width();
     for (int i = 0; i < ui->TableMtd_1->columnCount(); ++i)
         width += ui->TableMtd_1->columnWidth(i);
+
 
     // добавляем ширину рамки
     width += ui->TableMtd_1->frameWidth() * 2;
@@ -268,7 +270,76 @@ void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
     ui->TableMtd_1->setFixedWidth(width);
 
     ui->TableMtd_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    compareVColumns();
 }
+
+void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
+{
+    QSignalBlocker blocker(ui->TableMtd_2);
+
+    ui->TableMtd_2->clear();
+    ui->TableMtd_2->setRowCount(data.size());
+    ui->TableMtd_2->setColumnCount(5);
+
+    QStringList headers;
+    headers << "h" << "v" << "av" << "TTi" << "PPi";
+    ui->TableMtd_2->setHorizontalHeaderLabels(headers);
+
+    ui->TableMtd_2->setCurrentCell(-1, -1);
+    ui->TableMtd_2->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Bull_mtd &item = data[row];
+
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
+        ui->TableMtd_2->setItem(row, 0, hItem);
+
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_2->setItem(row, 1, vItem);
+
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_2->setItem(row, 2, avItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_2->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtd_2->setItem(row, 4, ppiItem);
+    }
+
+    // подгоняем колонки под содержимое
+    ui->TableMtd_2->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    //ui->TableMtd_2->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+
+
+    int width = ui->TableMtd_2->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtd_2->columnCount(); ++i)
+        width += ui->TableMtd_2->columnWidth(i);
+
+
+    // добавляем ширину рамки
+    width += ui->TableMtd_2->frameWidth() * 2;
+
+    ui->TableMtd_2->setFixedWidth(width);
+
+    ui->TableMtd_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    compareVColumns();
+}
+
+
 
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
@@ -320,7 +391,7 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
     }
 
     // подгоняем колонки под содержимое
-    ui->TableMtd->resizeColumnsToContents();
+    //ui->TableMtd->resizeColumnsToContents();
 
     // отключаем горизонтальный скролл
     ui->TableMtd->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -401,6 +472,134 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
 
     ui->TableMts->setFixedWidth(width);
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+}
+
+/*
+void MainWindow::compareVColumns()
+{
+    QTableWidget* table1 = ui->TableMtd_1;
+    QTableWidget* table2 = ui->TableMtd_2;
+
+    int col1 = -1;
+    int col2 = -1;
+
+    // ищем колонку "v"
+    for (int i = 0; i < table1->columnCount(); i++)
+    {
+        if (table1->horizontalHeaderItem(i)->text() == "v")
+            col1 = i;
+    }
+
+    for (int i = 0; i < table2->columnCount(); i++)
+    {
+        if (table2->horizontalHeaderItem(i)->text() == "v")
+            col2 = i;
+    }
+
+    if (col1 == -1 || col2 == -1)
+        return;
+
+    int rows = std::min(table1->rowCount(), table2->rowCount());
+
+    for (int r = 0; r < rows; r++)
+    {
+        QTableWidgetItem* item1 = table1->item(r, col1);
+        QTableWidgetItem* item2 = table2->item(r, col2);
+
+        if (!item1 || !item2)
+            continue;
+
+        double v1 = item1->text().toDouble();
+        double v2 = item2->text().toDouble();
+
+        double diff = std::abs(v1 - v2);
+
+        QColor color = (diff <= 1.0) ? QColor(144,238,144) : QColor(255,182,193);
+
+        item1->setBackground(color);
+        item2->setBackground(color);
+    }
+}
+*/
+
+void MainWindow::compareVColumns()
+{
+    QTableWidget* table1 = ui->TableMtd_1;
+    QTableWidget* table2 = ui->TableMtd_2;
+
+    int vCol1 = -1, vCol2 = -1;
+    int hCol1 = -1, hCol2 = -1;
+
+    // ищем колонки v и h в первой таблице
+    for (int i = 0; i < table1->columnCount(); i++)
+    {
+        QString header = table1->horizontalHeaderItem(i)->text();
+
+        if (header == "v")
+            vCol1 = i;
+
+        if (header == "h")
+            hCol1 = i;
+    }
+
+    // ищем колонки v и h во второй таблице
+    for (int i = 0; i < table2->columnCount(); i++)
+    {
+        QString header = table2->horizontalHeaderItem(i)->text();
+
+        if (header == "v")
+            vCol2 = i;
+
+        if (header == "h")
+            hCol2 = i;
+    }
+
+    if (vCol1 == -1 || vCol2 == -1 || hCol1 == -1 || hCol2 == -1)
+        return;
+
+    // создаем карту: высота -> строка таблицы 2
+    QMap<double, int> heightToRow;
+
+    for (int r = 0; r < table2->rowCount(); r++)
+    {
+        QTableWidgetItem* hItem = table2->item(r, hCol2);
+        if (!hItem)
+            continue;
+
+        double h = hItem->text().toDouble();
+        heightToRow[h] = r;
+    }
+
+    // теперь идем по первой таблице
+    for (int r = 0; r < table1->rowCount(); r++)
+    {
+        QTableWidgetItem* hItem1 = table1->item(r, hCol1);
+        QTableWidgetItem* vItem1 = table1->item(r, vCol1);
+
+        if (!hItem1 || !vItem1)
+            continue;
+
+        double h = hItem1->text().toDouble();
+
+        if (!heightToRow.contains(h))
+            continue;
+
+        int r2 = heightToRow[h];
+
+        QTableWidgetItem* vItem2 = table2->item(r2, vCol2);
+        if (!vItem2)
+            continue;
+
+        double v1 = vItem1->text().toDouble();
+        double v2 = vItem2->text().toDouble();
+
+        double diff = std::abs(v1 - v2);
+
+        QColor color = (diff <= 1.0) ? QColor(144,238,144) : QColor(255,182,193);
+
+        vItem1->setBackground(color);
+        vItem2->setBackground(color);
+    }
 }
 
 void MainWindow::on_pushButtonLoadMtd_clicked()
@@ -616,43 +815,43 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     };
 
     std::map<double, double> temperatureTable = {
-        {25.0,  15.75},
-        {50.0,  15.6},
-        {75.0,  15.45},
-        {150.0,  14.95},
-        {200.0,  15.3},
-        {400.0,  14.0},
-        {500.0,  12.7},
-        {700.0,  11.4},
-        {800.0,  12.1},
-        {900.0, 10.2},
-        {1100.0, 9.0},
-        {1200.0, 9.6},
-        {1600.0, 7.0},
-        {2000.0, 4.5},
-        {2400.0, 2.0},
-        {3000.0, -1.2},
-        {4000.0, -6.2},
-        {5000.0, -12.6},
-        {6000.0, -18.9},
-        {8000.0, -28.4},
-        {10000.0, -41.1},
-        {12000.0, -50.4},
-        {14000.0, -51.5},
-        {16000.0, -51.5},
-        {18000.0, -51.5},
-        {20000.0, -51.5},
-    };
+                                                 {25.0,  15.75},
+                                                 {50.0,  15.6},
+                                                 {75.0,  15.45},
+                                                 {150.0,  14.95},
+                                                 {200.0,  15.3},
+                                                 {400.0,  14.0},
+                                                 {500.0,  12.7},
+                                                 {700.0,  11.4},
+                                                 {800.0,  12.1},
+                                                 {900.0, 10.2},
+                                                 {1100.0, 9.0},
+                                                 {1200.0, 9.6},
+                                                 {1600.0, 7.0},
+                                                 {2000.0, 4.5},
+                                                 {2400.0, 2.0},
+                                                 {3000.0, -1.2},
+                                                 {4000.0, -6.2},
+                                                 {5000.0, -12.6},
+                                                 {6000.0, -18.9},
+                                                 {8000.0, -28.4},
+                                                 {10000.0, -41.1},
+                                                 {12000.0, -50.4},
+                                                 {14000.0, -51.5},
+                                                 {16000.0, -51.5},
+                                                 {18000.0, -51.5},
+                                                 {20000.0, -51.5},
+                                                 };
 
     std::map<double, double> DensityTable = {
-        {50.0, 1.2},
-        {75.0, 1.197},
-        {150.0, 1.188},
-        {500.0, 1.149},
-        {700.0, 1.127},
-        {900.0, 1.105},
-        {1100.0, 1.108},
-    };
+                                             {50.0, 1.2},
+                                             {75.0, 1.197},
+                                             {150.0, 1.188},
+                                             {500.0, 1.149},
+                                             {700.0, 1.127},
+                                             {900.0, 1.105},
+                                             {1100.0, 1.108},
+                                             };
 
     // 0. Считаем толщину зоны
     analyzer.calculateDeltaH(zones);
@@ -746,6 +945,7 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     setDataMtd(mtd);
     setDataMts(mts);
     setDataTableMtd(mtd);
+    setDataTableBullMtd(bull_mtd);
 
     // Переходим на страницу с таблицами
     ui->stackedWidget->setCurrentIndex(3);
