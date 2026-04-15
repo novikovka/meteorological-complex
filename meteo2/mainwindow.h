@@ -171,6 +171,9 @@ private slots:
     void onTableMtdClicked(int row, int column);
     void onTableMtsClicked(int row, int column);
 
+    //клики по новым таблицам
+    void onTableMtdResultClicked(int row, int column);
+
     //сравнение и закрашивание ячеек
     void compareVColumns();
 

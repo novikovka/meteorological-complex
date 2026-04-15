@@ -48,6 +48,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->TableMtd, &QTableWidget::cellEntered,
             this, &MainWindow::onTableCellEntered);
 
+    // переход по клику на TableMtdResult
+    connect(ui->TableMtdResult, &QTableWidget::cellClicked,
+            this, &MainWindow::onTableMtdResultClicked);
+
     //ui->lineEditMtd->setText("/Users/alinanovikova/Desktop/Бюллетень/mtd.txt");
     //ui->lineEditWind->setText("/Users/alinanovikova/Desktop/log_1.csv");
     //ui->lineEditTemp->setText("/Users/alinanovikova/Desktop/log_3.csv");
@@ -68,6 +72,90 @@ void MainWindow::onTableCellEntered(int row, int column)
         table->unsetCursor();
     else
         table->setCursor(Qt::PointingHandCursor);
+}
+
+void MainWindow::onTableMtdResultClicked(int row, int column)
+{
+    QTableWidget* table = qobject_cast<QTableWidget*>(sender()); //ссылка на таблицу
+
+    if (!table)
+        return;
+
+    QTableWidgetItem* cellItem = table->item(row, column);
+    if (!cellItem)
+        return;
+
+    // создаём структуру данных
+    CellInfo cell;
+
+    cell.row = row;
+    cell.column = column;
+    cell.tableName = table->objectName();
+    cell.cellValue = cellItem->text();
+
+    QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
+    cell.height = hItem->text().toDouble();
+
+    QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
+
+    if (headerItem)
+        cell.columnName = headerItem->text();
+    else
+        cell.columnName = QString("Column %1").arg(column);
+
+    QString html;
+
+    Zone currentZone{};
+
+    // Предполагаем, что zones отсортированы по height
+    if (!zones.empty()) {
+        // Находим первую зону с высотой >= cell.height
+        auto it = std::lower_bound(zones.begin(), zones.end(), cell.height,
+                                   [](const Zone& zone, double height) {
+                                       return zone.height < height;
+                                   });
+
+        if (it == zones.begin()) {
+            // Все зоны выше cell.height, берем первую
+            currentZone = zones.front();
+        }
+        else if (it == zones.end()) {
+            // Все зоны ниже cell.height, берем последнюю
+            currentZone = zones.back();
+        }
+        else {
+            // Сравниваем две соседние зоны: (it-1) и it
+            const Zone& lower = *(it - 1);
+            const Zone& upper = *it;
+
+            double diffLower = std::abs(lower.height - cell.height);
+            double diffUpper = std::abs(upper.height - cell.height);
+
+            currentZone = (diffLower <= diffUpper) ? lower : upper;
+        }
+    }
+
+    if(cell.columnName == "v"){
+        html = displayManager.HtmlMtdV(cell, currentZone, mtd, coordinates);
+    }else if(cell.columnName == "av"){
+        html = displayManager.HtmlMtdAV(cell, currentZone, mtd, coordinates);
+    }else if(cell.columnName == "TTi"){
+        html = displayManager.HtmlTTiMtd(cell, zones, mtd, globalParam);
+    }else if(cell.columnName == "TTcpm"){
+        html = displayManager.HtmlTTcpmMtd(cell, zones, mtd, globalParam);
+    }else if(cell.columnName == "PPi"){
+        html = displayManager.HtmlPPiMtd(cell, zones, mtd);
+    }else if(cell.columnName == "PPcpm"){
+        html = displayManager.HtmlPPcpmMtd(cell, zones, mtd);
+    }
+
+    // выводим
+    ui->TextBrowser->setHtml(html);
+
+    qDebug() << "Клик по таблице:" << cell.tableName
+             << "row:" << row
+             << "column:" << column;
+
 }
 
 void MainWindow::onTableMtdClicked(int row, int column)
@@ -211,18 +299,18 @@ void MainWindow::onTableMtsClicked(int row, int column)
 
 void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
 {
-    QSignalBlocker blocker(ui->TableMtd_1);
+    QSignalBlocker blocker(ui->TableMtdResult);
 
-    ui->TableMtd_1->clear();
-    ui->TableMtd_1->setRowCount(data.size());
-    ui->TableMtd_1->setColumnCount(5);
+    ui->TableMtdResult->clear();
+    ui->TableMtdResult->setRowCount(data.size());
+    ui->TableMtdResult->setColumnCount(5);
 
     QStringList headers;
     headers << "h" << "v" << "av" << "TTi" << "PPi";
-    ui->TableMtd_1->setHorizontalHeaderLabels(headers);
+    ui->TableMtdResult->setHorizontalHeaderLabels(headers);
 
-    ui->TableMtd_1->setCurrentCell(-1, -1);
-    ui->TableMtd_1->clearSelection();
+    ui->TableMtdResult->setCurrentCell(-1, -1);
+    ui->TableMtdResult->clearSelection();
 
     for (int row = 0; row < data.size(); ++row)
     {
@@ -231,27 +319,27 @@ void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
         QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
         hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
-        ui->TableMtd_1->setItem(row, 0, hItem);
+        ui->TableMtdResult->setItem(row, 0, hItem);
 
         QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
         vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_1->setItem(row, 1, vItem);
+        ui->TableMtdResult->setItem(row, 1, vItem);
 
         QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
         avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_1->setItem(row, 2, avItem);
+        ui->TableMtdResult->setItem(row, 2, avItem);
 
         QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
         ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_1->setItem(row, 3, ttiItem);
+        ui->TableMtdResult->setItem(row, 3, ttiItem);
 
         QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
         ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_1->setItem(row, 4, ppiItem);
+        ui->TableMtdResult->setItem(row, 4, ppiItem);
     }
 
     // подгоняем колонки под содержимое
-    ui->TableMtd_1->resizeColumnsToContents();
+    ui->TableMtdResult->resizeColumnsToContents();
 
     // отключаем горизонтальный скролл
     //ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -259,35 +347,35 @@ void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
     // вычисляем нужную ширину таблицы
 
 
-    int width = ui->TableMtd_1->verticalHeader()->width();
-    for (int i = 0; i < ui->TableMtd_1->columnCount(); ++i)
-        width += ui->TableMtd_1->columnWidth(i);
+    int width = ui->TableMtdResult->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtdResult->columnCount(); ++i)
+        width += ui->TableMtdResult->columnWidth(i);
 
 
     // добавляем ширину рамки
-    width += ui->TableMtd_1->frameWidth() * 2;
+    width += ui->TableMtdResult->frameWidth() * 2;
 
-    ui->TableMtd_1->setFixedWidth(width);
+    ui->TableMtdResult->setFixedWidth(width);
 
-    ui->TableMtd_1->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->TableMtdResult->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     compareVColumns();
 }
 
 void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
 {
-    QSignalBlocker blocker(ui->TableMtd_2);
+    QSignalBlocker blocker(ui->TableMtdBull);
 
-    ui->TableMtd_2->clear();
-    ui->TableMtd_2->setRowCount(data.size());
-    ui->TableMtd_2->setColumnCount(5);
+    ui->TableMtdBull->clear();
+    ui->TableMtdBull->setRowCount(data.size());
+    ui->TableMtdBull->setColumnCount(5);
 
     QStringList headers;
     headers << "h" << "v" << "av" << "TTi" << "PPi";
-    ui->TableMtd_2->setHorizontalHeaderLabels(headers);
+    ui->TableMtdBull->setHorizontalHeaderLabels(headers);
 
-    ui->TableMtd_2->setCurrentCell(-1, -1);
-    ui->TableMtd_2->clearSelection();
+    ui->TableMtdBull->setCurrentCell(-1, -1);
+    ui->TableMtdBull->clearSelection();
 
     for (int row = 0; row < data.size(); ++row)
     {
@@ -296,27 +384,27 @@ void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
         QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
         hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
-        ui->TableMtd_2->setItem(row, 0, hItem);
+        ui->TableMtdBull->setItem(row, 0, hItem);
 
         QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.v, 'f', 2));
         vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_2->setItem(row, 1, vItem);
+        ui->TableMtdBull->setItem(row, 1, vItem);
 
         QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.av, 'f', 2));
         avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_2->setItem(row, 2, avItem);
+        ui->TableMtdBull->setItem(row, 2, avItem);
 
         QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTi, 'f', 2));
         ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_2->setItem(row, 3, ttiItem);
+        ui->TableMtdBull->setItem(row, 3, ttiItem);
 
         QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPi, 'f', 2));
         ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        ui->TableMtd_2->setItem(row, 4, ppiItem);
+        ui->TableMtdBull->setItem(row, 4, ppiItem);
     }
 
     // подгоняем колонки под содержимое
-    ui->TableMtd_2->resizeColumnsToContents();
+    ui->TableMtdBull->resizeColumnsToContents();
 
     // отключаем горизонтальный скролл
     //ui->TableMtd_2->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -324,17 +412,17 @@ void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
     // вычисляем нужную ширину таблицы
 
 
-    int width = ui->TableMtd_2->verticalHeader()->width();
-    for (int i = 0; i < ui->TableMtd_2->columnCount(); ++i)
-        width += ui->TableMtd_2->columnWidth(i);
+    int width = ui->TableMtdBull->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtdBull->columnCount(); ++i)
+        width += ui->TableMtdBull->columnWidth(i);
 
 
     // добавляем ширину рамки
-    width += ui->TableMtd_2->frameWidth() * 2;
+    width += ui->TableMtdBull->frameWidth() * 2;
 
-    ui->TableMtd_2->setFixedWidth(width);
+    ui->TableMtdBull->setFixedWidth(width);
 
-    ui->TableMtd_2->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->TableMtdBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     compareVColumns();
 }
@@ -474,58 +562,10 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
-/*
 void MainWindow::compareVColumns()
 {
-    QTableWidget* table1 = ui->TableMtd_1;
-    QTableWidget* table2 = ui->TableMtd_2;
-
-    int col1 = -1;
-    int col2 = -1;
-
-    // ищем колонку "v"
-    for (int i = 0; i < table1->columnCount(); i++)
-    {
-        if (table1->horizontalHeaderItem(i)->text() == "v")
-            col1 = i;
-    }
-
-    for (int i = 0; i < table2->columnCount(); i++)
-    {
-        if (table2->horizontalHeaderItem(i)->text() == "v")
-            col2 = i;
-    }
-
-    if (col1 == -1 || col2 == -1)
-        return;
-
-    int rows = std::min(table1->rowCount(), table2->rowCount());
-
-    for (int r = 0; r < rows; r++)
-    {
-        QTableWidgetItem* item1 = table1->item(r, col1);
-        QTableWidgetItem* item2 = table2->item(r, col2);
-
-        if (!item1 || !item2)
-            continue;
-
-        double v1 = item1->text().toDouble();
-        double v2 = item2->text().toDouble();
-
-        double diff = std::abs(v1 - v2);
-
-        QColor color = (diff <= 1.0) ? QColor(144,238,144) : QColor(255,182,193);
-
-        item1->setBackground(color);
-        item2->setBackground(color);
-    }
-}
-*/
-
-void MainWindow::compareVColumns()
-{
-    QTableWidget* table1 = ui->TableMtd_1;
-    QTableWidget* table2 = ui->TableMtd_2;
+    QTableWidget* table1 = ui->TableMtdResult;
+    QTableWidget* table2 = ui->TableMtdBull;
 
     int vCol1 = -1, vCol2 = -1;
     int hCol1 = -1, hCol2 = -1;
