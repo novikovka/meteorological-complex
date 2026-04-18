@@ -139,12 +139,13 @@ struct Bull_mtd{
     double av{};
 };
 
-struct Bull_mts{
-    double h{};
-    double PPcpm{};
-    double TTcpm{};
-    double v{};
-    double av{};
+struct Bull_mts
+{
+    double h;      // высота в метрах
+    double w;      // скорость ветра
+    double aw;     // направление ветра
+    double TTcpm;  // температура
+    double PPcpm;  // давление
 };
 
 struct Mtd {

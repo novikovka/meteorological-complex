@@ -26,7 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
     //устанавливаем размер окна "на весь экран"
     showMaximized();
 
@@ -48,14 +47,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->TableMtd, &QTableWidget::cellEntered,
             this, &MainWindow::onTableCellEntered);
 
+    // для изменения вида курсора в TableMtdResult
+    connect(ui->TableMtdResult, &QTableWidget::cellEntered,
+            this, &MainWindow::onTableCellEntered);
+
     // переход по клику на TableMtdResult
     connect(ui->TableMtdResult, &QTableWidget::cellClicked,
             this, &MainWindow::onTableMtdResultClicked);
 
+    // переход по клику на TableMtdResult
+    connect(ui->TableMtsResult, &QTableWidget::cellClicked,
+            this, &MainWindow::onTableMtsResultClicked);
+
     //ui->lineEditMtd->setText("/Users/alinanovikova/Desktop/Бюллетень/mtd.txt");
     //ui->lineEditWind->setText("/Users/alinanovikova/Desktop/log_1.csv");
     //ui->lineEditTemp->setText("/Users/alinanovikova/Desktop/log_3.csv");
-
 }
 
 MainWindow::~MainWindow()
@@ -65,13 +71,20 @@ MainWindow::~MainWindow()
 
 void MainWindow::onTableCellEntered(int row, int column)
 {
+    Q_UNUSED(row);
+
     QTableWidget* table = qobject_cast<QTableWidget*>(sender());
     if (!table) return;
 
-    if (column == 0)
-        table->unsetCursor();
-    else
+    QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
+    if (!headerItem) return;
+
+    QString name = headerItem->text();
+
+    if (name == "v" || name == "av" || name == "TTi" || name == "PPi")
         table->setCursor(Qt::PointingHandCursor);
+    else
+        table->unsetCursor();
 }
 
 void MainWindow::onTableMtdResultClicked(int row, int column)
@@ -157,6 +170,91 @@ void MainWindow::onTableMtdResultClicked(int row, int column)
              << "column:" << column;
 
 }
+
+void MainWindow::onTableMtsResultClicked(int row, int column)
+{
+    QTableWidget* table = qobject_cast<QTableWidget*>(sender()); //ссылка на таблицу
+
+    if (!table)
+        return;
+
+    QTableWidgetItem* cellItem = table->item(row, column);
+    if (!cellItem)
+        return;
+
+    // создаём структуру данных
+    CellInfo cell;
+
+    cell.row = row;
+    cell.column = column;
+    cell.tableName = table->objectName();
+    cell.cellValue = cellItem->text();
+
+    QTableWidgetItem* hItem = table->item(row, 0); //получаем высоту
+    cell.height = hItem->text().toDouble();
+
+    QTableWidgetItem* headerItem = table->horizontalHeaderItem(column);
+
+    if (headerItem)
+        cell.columnName = headerItem->text();
+    else
+        cell.columnName = QString("Column %1").arg(column);
+
+    QString html;
+
+    Zone currentZone{};
+
+    // Предполагаем, что zones отсортированы по height
+    if (!zones.empty()) {
+        // Находим первую зону с высотой >= cell.height
+        auto it = std::lower_bound(zones.begin(), zones.end(), cell.height,
+                                   [](const Zone& zone, double height) {
+                                       return zone.height < height;
+                                   });
+
+        if (it == zones.begin()) {
+            // Все зоны выше cell.height, берем первую
+            currentZone = zones.front();
+        }
+        else if (it == zones.end()) {
+            // Все зоны ниже cell.height, берем последнюю
+            currentZone = zones.back();
+        }
+        else {
+            // Сравниваем две соседние зоны: (it-1) и it
+            const Zone& lower = *(it - 1);
+            const Zone& upper = *it;
+
+            double diffLower = std::abs(lower.height - cell.height);
+            double diffUpper = std::abs(upper.height - cell.height);
+
+            currentZone = (diffLower <= diffUpper) ? lower : upper;
+        }
+    }
+
+    if(cell.columnName == "w"){
+        html = displayManager.HtmlMtsV(cell, zones, mts, coordinates);
+    }else if(cell.columnName == "aw"){
+        html = displayManager.HtmlMtsAV(cell, zones, mts, coordinates);
+    }else if(cell.columnName == "TTi"){
+        html = displayManager.HtmlTTiMts(cell, zones, mts, globalParam);
+    }else if(cell.columnName == "TTcpm"){
+        html = displayManager.HtmlTTcpmMts(cell, zones, mts, globalParam);
+    }else if(cell.columnName == "PPi"){
+        html = displayManager.HtmlPPiMts(cell, zones, mts);
+    }else if(cell.columnName == "PPcpm"){
+        html = displayManager.HtmlPPcpmMts(cell, zones, mts);
+    }
+
+    // выводим
+    ui->TextBrowser->setHtml(html);
+
+    qDebug() << "Клик по таблице:" << cell.tableName
+             << "row:" << row
+             << "column:" << column;
+
+}
+
 
 void MainWindow::onTableMtdClicked(int row, int column)
 {
@@ -411,7 +509,6 @@ void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
 
     // вычисляем нужную ширину таблицы
 
-
     int width = ui->TableMtdBull->verticalHeader()->width();
     for (int i = 0; i < ui->TableMtdBull->columnCount(); ++i)
         width += ui->TableMtdBull->columnWidth(i);
@@ -424,7 +521,144 @@ void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
 
     ui->TableMtdBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+    ui->TableMtdBull->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->TableMtdBull->setFocusPolicy(Qt::NoFocus);
+    ui->TableMtdBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
     compareVColumns();
+}
+
+void MainWindow::setDataTableBullMts(const std::vector<Bull_mts>& data)
+{
+    QSignalBlocker blocker(ui->TableMtsBull);
+
+    ui->TableMtsBull->clear();
+    ui->TableMtsBull->setRowCount(data.size());
+    ui->TableMtsBull->setColumnCount(5);
+
+    QStringList headers;
+    headers << "h" << "w" << "aw" << "TTcpm" << "PPcpm";
+    ui->TableMtsBull->setHorizontalHeaderLabels(headers);
+
+    ui->TableMtsBull->setCurrentCell(-1, -1);
+    ui->TableMtsBull->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Bull_mts &item = data[row];
+
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
+        ui->TableMtsBull->setItem(row, 0, hItem);
+
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.w, 'f', 2));
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsBull->setItem(row, 1, vItem);
+
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.aw, 'f', 2));
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsBull->setItem(row, 2, avItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsBull->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsBull->setItem(row, 4, ppiItem);
+    }
+
+    // подгоняем колонки под содержимое
+    ui->TableMtsBull->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    //ui->TableMtd_2->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+
+    int width = ui->TableMtsBull->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtsBull->columnCount(); ++i)
+        width += ui->TableMtsBull->columnWidth(i);
+
+
+    // добавляем ширину рамки
+    width += ui->TableMtsBull->frameWidth() * 2;
+
+    ui->TableMtsBull->setFixedWidth(width);
+
+    ui->TableMtsBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    ui->TableMtsBull->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->TableMtsBull->setFocusPolicy(Qt::NoFocus);
+    ui->TableMtsBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    //compareVColumns();
+}
+
+void MainWindow::setDataTableMts(const std::vector<Mts>& data)
+{
+    QSignalBlocker blocker(ui->TableMtsResult);
+
+    ui->TableMtsResult->clear();
+    ui->TableMtsResult->setRowCount(data.size());
+    ui->TableMtsResult->setColumnCount(5);
+
+    QStringList headers;
+    headers << "h" << "v" << "av" << "TTi" << "PPi";
+    ui->TableMtsResult->setHorizontalHeaderLabels(headers);
+
+    ui->TableMtsResult->setCurrentCell(-1, -1);
+    ui->TableMtsResult->clearSelection();
+
+    for (int row = 0; row < data.size(); ++row)
+    {
+        const Mts &item = data[row];
+
+        QTableWidgetItem *hItem = new QTableWidgetItem(QString::number(item.h, 'f', 2));
+        hItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hItem->setFlags(hItem->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEditable);
+        ui->TableMtsResult->setItem(row, 0, hItem);
+
+        QTableWidgetItem *vItem = new QTableWidgetItem(QString::number(item.w, 'f', 2));
+        vItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsResult->setItem(row, 1, vItem);
+
+        QTableWidgetItem *avItem = new QTableWidgetItem(QString::number(item.aw, 'f', 2));
+        avItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsResult->setItem(row, 2, avItem);
+
+        QTableWidgetItem *ttiItem = new QTableWidgetItem(QString::number(item.TTcpm, 'f', 2));
+        ttiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsResult->setItem(row, 3, ttiItem);
+
+        QTableWidgetItem *ppiItem = new QTableWidgetItem(QString::number(item.PPcpm, 'f', 2));
+        ppiItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        ui->TableMtsResult->setItem(row, 4, ppiItem);
+    }
+
+    // подгоняем колонки под содержимое
+    ui->TableMtsResult->resizeColumnsToContents();
+
+    // отключаем горизонтальный скролл
+    //ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // вычисляем нужную ширину таблицы
+
+
+    int width = ui->TableMtsResult->verticalHeader()->width();
+    for (int i = 0; i < ui->TableMtsResult->columnCount(); ++i)
+        width += ui->TableMtsResult->columnWidth(i);
+
+
+    // добавляем ширину рамки
+    width += ui->TableMtsResult->frameWidth() * 2;
+
+    ui->TableMtsResult->setFixedWidth(width);
+
+    ui->TableMtsResult->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    //compareVColumns();
 }
 
 
@@ -567,37 +801,43 @@ void MainWindow::compareVColumns()
     QTableWidget* table1 = ui->TableMtdResult;
     QTableWidget* table2 = ui->TableMtdBull;
 
-    int vCol1 = -1, vCol2 = -1;
-    int hCol1 = -1, hCol2 = -1;
+    int hCol1 = -1;
+    int hCol2 = -1;
 
-    // ищем колонки v и h в первой таблице
+    // какие колонки нужно сравнивать
+    QStringList compareHeaders = {"v", "av", "TTi", "PPi"};
+
+    QMap<QString, int> col1;
+    QMap<QString, int> col2;
+
+    // ищем колонки в первой таблице
     for (int i = 0; i < table1->columnCount(); i++)
     {
         QString header = table1->horizontalHeaderItem(i)->text();
 
-        if (header == "v")
-            vCol1 = i;
-
         if (header == "h")
             hCol1 = i;
+
+        if (compareHeaders.contains(header))
+            col1[header] = i;
     }
 
-    // ищем колонки v и h во второй таблице
+    // ищем колонки во второй таблице
     for (int i = 0; i < table2->columnCount(); i++)
     {
         QString header = table2->horizontalHeaderItem(i)->text();
 
-        if (header == "v")
-            vCol2 = i;
-
         if (header == "h")
             hCol2 = i;
+
+        if (compareHeaders.contains(header))
+            col2[header] = i;
     }
 
-    if (vCol1 == -1 || vCol2 == -1 || hCol1 == -1 || hCol2 == -1)
+    if (hCol1 == -1 || hCol2 == -1)
         return;
 
-    // создаем карту: высота -> строка таблицы 2
+    // карта: высота -> строка таблицы 2
     QMap<double, int> heightToRow;
 
     for (int r = 0; r < table2->rowCount(); r++)
@@ -610,13 +850,11 @@ void MainWindow::compareVColumns()
         heightToRow[h] = r;
     }
 
-    // теперь идем по первой таблице
+    // сравнение строк
     for (int r = 0; r < table1->rowCount(); r++)
     {
         QTableWidgetItem* hItem1 = table1->item(r, hCol1);
-        QTableWidgetItem* vItem1 = table1->item(r, vCol1);
-
-        if (!hItem1 || !vItem1)
+        if (!hItem1)
             continue;
 
         double h = hItem1->text().toDouble();
@@ -626,19 +864,30 @@ void MainWindow::compareVColumns()
 
         int r2 = heightToRow[h];
 
-        QTableWidgetItem* vItem2 = table2->item(r2, vCol2);
-        if (!vItem2)
-            continue;
+        // сравниваем все нужные колонки
+        for (const QString& header : compareHeaders)
+        {
+            if (!col1.contains(header) || !col2.contains(header))
+                continue;
 
-        double v1 = vItem1->text().toDouble();
-        double v2 = vItem2->text().toDouble();
+            QTableWidgetItem* item1 = table1->item(r, col1[header]);
+            QTableWidgetItem* item2 = table2->item(r2, col2[header]);
 
-        double diff = std::abs(v1 - v2);
+            if (!item1 || !item2)
+                continue;
 
-        QColor color = (diff <= 1.0) ? QColor(144,238,144) : QColor(255,182,193);
+            double v1 = item1->text().toDouble();
+            double v2 = item2->text().toDouble();
 
-        vItem1->setBackground(color);
-        vItem2->setBackground(color);
+            double diff = std::abs(v1 - v2);
+
+            QColor color = (diff <= 1.0)
+                               ? QColor(144,238,144)
+                               : QColor(255,182,193);
+
+            item1->setBackground(color);
+            item2->setBackground(color);
+        }
     }
 }
 
@@ -646,7 +895,7 @@ void MainWindow::on_pushButtonLoadMtd_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(
         this,
-        "Открыть бюллетень Метео",
+        "Открыть бюллетень Метеодействительный",
         "",
         "Text files (*.txt)");
 
@@ -674,6 +923,41 @@ void MainWindow::on_pushButtonLoadMtd_clicked()
                  << "TTi:" << item.TTi
                  << "av:" << item.av
                  << "v:" << item.v;
+    }
+}
+
+void MainWindow::on_pushButtonLoadMts_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Открыть бюллетень Метеосредний",
+        "",
+        "Text files (*.txt)");
+
+    if (fileName.isEmpty())
+        return;
+
+    ui->lineEditMts->setText(fileName);
+
+    FileParser parser;
+
+    bull_mts.clear();
+
+    if (!parser.parseMeteoAverage(fileName, bull_mts))
+    {
+        QMessageBox::warning(this, "Ошибка", "Не удалось открыть файл");
+        return;
+    }
+
+    qDebug() << "Размер вектора:" << bull_mts.size();
+
+    for (const auto& item : bull_mts)
+    {
+        qDebug() << "h:" << item.h
+                 << "PPcpm:" << item.PPcpm
+                 << "TTcpm:" << item.TTcpm
+                 << "aw:" << item.aw
+                 << "w:" << item.w;
     }
 }
 
@@ -715,12 +999,8 @@ void MainWindow::on_pushButtonLoadTempLog_clicked() // обработка лог
     QMessageBox::information(this, "Файл загружен","Файл успешно выбран.");
 }
 
-void MainWindow::on_Button_go_to_start_clicked(){
+void MainWindow::on_PushButtonBack_clicked(){
     ui->stackedWidget->setCurrentIndex(0);
-}
-
-void MainWindow::on_Button_go_to_table_clicked(){
-    ui->stackedWidget->setCurrentIndex(2);
 }
 
 void MainWindow::on_pushButtonCalculateTemp_clicked()
@@ -984,8 +1264,12 @@ void MainWindow::on_pushButtonCalculateTemp_clicked()
     // Обновляем таблицы новыми данными
     setDataMtd(mtd);
     setDataMts(mts);
+
     setDataTableMtd(mtd);
+    setDataTableMts(mts);
+
     setDataTableBullMtd(bull_mtd);
+    setDataTableBullMts(bull_mts);
 
     // Переходим на страницу с таблицами
     ui->stackedWidget->setCurrentIndex(3);

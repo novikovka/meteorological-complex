@@ -12,6 +12,9 @@ public:
     bool parseTxtFile(const QString& fileName,
                       std::vector<Bull_mtd>& records);
 
+    bool parseMeteoAverage(const QString& fileName,
+                           std::vector<Bull_mts>& records);
+
     bool parseCSV(const QString& fileName,std::vector<Coordinate>& coordinates,Zone& firstZone,Mtd& firstMtd);
 
     bool parseTemperatureCSV(const QString& fileName,std::vector<TemperatureRecord>& records);
