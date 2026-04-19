@@ -136,6 +136,7 @@ void Analyzer::calculateWm(std::vector<Mts>& mts)
 
             mts[m].w  = std::sqrt(std::pow(wx, 2) + std::pow(wz, 2));
             mts[m].aw = qRound(napr(mts[m].wx, mts[m].wz) * KDR);
+            mts[m].aw = qRound(mts[m].aw/ 100.0); //вот эта строчка добалена
 
         }
     }

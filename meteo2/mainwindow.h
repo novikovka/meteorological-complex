@@ -103,6 +103,7 @@ signals:
 
 #include "types.h"
 #include "displaymanager.h"
+#include <QTableWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -179,7 +180,7 @@ private slots:
     void onTableMtsResultClicked(int row, int column);
 
     //сравнение и закрашивание ячеек
-    void compareVColumns();
+    void compareVColumns(QTableWidget& table1, QTableWidget& table2);
 
     //для cursor pointer
     void onTableCellEntered(int row, int column);

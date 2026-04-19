@@ -15,6 +15,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <QTableWidget>
 
 
 #include <QMap>
@@ -457,7 +458,10 @@ void MainWindow::setDataTableMtd(const std::vector<Mtd>& data)
 
     ui->TableMtdResult->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    compareVColumns();
+    //compareVColumns();
+
+    // Вызов функции:
+    compareVColumns(*ui->TableMtdResult, *ui->TableMtdBull);
 }
 
 void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
@@ -525,7 +529,10 @@ void MainWindow::setDataTableBullMtd(const std::vector<Bull_mtd>& data)
     ui->TableMtdBull->setFocusPolicy(Qt::NoFocus);
     ui->TableMtdBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    compareVColumns();
+    // Вызов функции:
+    compareVColumns(*ui->TableMtdResult, *ui->TableMtdBull);
+
+    //compareVColumns();
 }
 
 void MainWindow::setDataTableBullMts(const std::vector<Bull_mts>& data)
@@ -593,6 +600,8 @@ void MainWindow::setDataTableBullMts(const std::vector<Bull_mts>& data)
     ui->TableMtsBull->setFocusPolicy(Qt::NoFocus);
     ui->TableMtsBull->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+    compareVColumns(*ui->TableMtsResult, *ui->TableMtsBull);
+
     //compareVColumns();
 }
 
@@ -605,7 +614,7 @@ void MainWindow::setDataTableMts(const std::vector<Mts>& data)
     ui->TableMtsResult->setColumnCount(5);
 
     QStringList headers;
-    headers << "h" << "v" << "av" << "TTi" << "PPi";
+    headers << "h" << "w" << "aw" << "TTcpm" << "PPcpm";
     ui->TableMtsResult->setHorizontalHeaderLabels(headers);
 
     ui->TableMtsResult->setCurrentCell(-1, -1);
@@ -644,8 +653,6 @@ void MainWindow::setDataTableMts(const std::vector<Mts>& data)
     //ui->TableMtd_1->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // вычисляем нужную ширину таблицы
-
-
     int width = ui->TableMtsResult->verticalHeader()->width();
     for (int i = 0; i < ui->TableMtsResult->columnCount(); ++i)
         width += ui->TableMtsResult->columnWidth(i);
@@ -658,10 +665,8 @@ void MainWindow::setDataTableMts(const std::vector<Mts>& data)
 
     ui->TableMtsResult->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    //compareVColumns();
+    compareVColumns(*ui->TableMtsResult, *ui->TableMtsBull);
 }
-
-
 
 void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 {
@@ -725,7 +730,6 @@ void MainWindow::setDataMtd(const std::vector<Mtd>& data)
 
     // добавляем ширину рамки
     width += ui->TableMtd->frameWidth() * 2;
-
     ui->TableMtd->setFixedWidth(width);
 
     ui->TableMtd->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -796,24 +800,24 @@ void MainWindow::setDataMts(const std::vector<Mts>& data)
     ui->TableMts->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
-void MainWindow::compareVColumns()
+void MainWindow::compareVColumns(QTableWidget& table1, QTableWidget& table2)
 {
-    QTableWidget* table1 = ui->TableMtdResult;
-    QTableWidget* table2 = ui->TableMtdBull;
-
     int hCol1 = -1;
     int hCol2 = -1;
 
     // какие колонки нужно сравнивать
-    QStringList compareHeaders = {"v", "av", "TTi", "PPi"};
+    QStringList compareHeaders = {"v", "av", "TTi", "PPi", "w", "aw", "TTcpm", "PPcpm"};
 
     QMap<QString, int> col1;
     QMap<QString, int> col2;
 
-    // ищем колонки в первой таблице
-    for (int i = 0; i < table1->columnCount(); i++)
+    // ищем колонки в первой таблице (используем . вместо ->)
+    for (int i = 0; i < table1.columnCount(); i++)
     {
-        QString header = table1->horizontalHeaderItem(i)->text();
+        QTableWidgetItem* headerItem = table1.horizontalHeaderItem(i);
+        if (!headerItem) continue;
+
+        QString header = headerItem->text();
 
         if (header == "h")
             hCol1 = i;
@@ -822,10 +826,13 @@ void MainWindow::compareVColumns()
             col1[header] = i;
     }
 
-    // ищем колонки во второй таблице
-    for (int i = 0; i < table2->columnCount(); i++)
+    // ищем колонки во второй таблице (используем . вместо ->)
+    for (int i = 0; i < table2.columnCount(); i++)
     {
-        QString header = table2->horizontalHeaderItem(i)->text();
+        QTableWidgetItem* headerItem = table2.horizontalHeaderItem(i);
+        if (!headerItem) continue;
+
+        QString header = headerItem->text();
 
         if (header == "h")
             hCol2 = i;
@@ -840,9 +847,9 @@ void MainWindow::compareVColumns()
     // карта: высота -> строка таблицы 2
     QMap<double, int> heightToRow;
 
-    for (int r = 0; r < table2->rowCount(); r++)
+    for (int r = 0; r < table2.rowCount(); r++)
     {
-        QTableWidgetItem* hItem = table2->item(r, hCol2);
+        QTableWidgetItem* hItem = table2.item(r, hCol2);
         if (!hItem)
             continue;
 
@@ -851,9 +858,9 @@ void MainWindow::compareVColumns()
     }
 
     // сравнение строк
-    for (int r = 0; r < table1->rowCount(); r++)
+    for (int r = 0; r < table1.rowCount(); r++)
     {
-        QTableWidgetItem* hItem1 = table1->item(r, hCol1);
+        QTableWidgetItem* hItem1 = table1.item(r, hCol1);
         if (!hItem1)
             continue;
 
@@ -870,8 +877,8 @@ void MainWindow::compareVColumns()
             if (!col1.contains(header) || !col2.contains(header))
                 continue;
 
-            QTableWidgetItem* item1 = table1->item(r, col1[header]);
-            QTableWidgetItem* item2 = table2->item(r2, col2[header]);
+            QTableWidgetItem* item1 = table1.item(r, col1[header]);
+            QTableWidgetItem* item2 = table2.item(r2, col2[header]);
 
             if (!item1 || !item2)
                 continue;
